@@ -115,16 +115,16 @@ function createWarningSign() {
 function createEnhancedGlassMaterial() {
   return new THREE.MeshPhysicalMaterial({
     transparent: true,
-    opacity: 0.3,
+    opacity: 0.2, 
     roughness: 0.05,
-    transmission: 0.95,
-    thickness: 0.05,
+    transmission: 0.98, 
+    thickness: 0.02, 
     clearcoat: 1.0,
     clearcoatRoughness: 0.1,
     ior: 1.5,
-    envMapIntensity: 1.5,
-    reflectivity: 0.9,
-    metalness: 0.05
+    envMapIntensity: 1.2, 
+    reflectivity: 0.8, 
+    metalness: 0.02 
   });
 }
 
@@ -148,10 +148,14 @@ function createGlassDoor() {
   );
   
   // Door frame
-  const frameGeometry = new THREE.BoxGeometry(2.2, 4.2, 0.1);
-  const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+  const frameGeometry = new THREE.BoxGeometry(2.1, 4.1, 0.08); 
+  const frameMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x505050,
+    roughness: 0.7,
+    metalness: 0.3
+  });
   const frame = new THREE.Mesh(frameGeometry, frameMaterial);
-  frame.position.z = -0.05;
+  frame.position.z = -0.04; 
   
   // Door handle
   const handleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4);
@@ -168,7 +172,7 @@ function createGlassDoor() {
 }
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf0f4f8);
+scene.background = new THREE.Color(0xe6e9ed); 
 
 // Add warning sign to scene
 const warningSign = createWarningSign();
@@ -240,10 +244,10 @@ renderer.domElement.addEventListener('touchend', () => {
 }, false);
 
 // Enhanced lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); 
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9); 
 directionalLight.position.set(5, 5, 5);
 directionalLight.castShadow = true;
 directionalLight.shadow.bias = -0.001;
@@ -360,6 +364,18 @@ scene.add(backBaseboard);
 const leftBaseboard = createBaseboard(20, false);
 leftBaseboard.position.set(-9.9, 0.15, 0);
 scene.add(leftBaseboard);
+
+const rightBaseboard = createBaseboard(20, false);
+rightBaseboard.position.set(9.9, 0.15, 0);
+scene.add(rightBaseboard);
+
+const frontBaseboard1 = createBaseboard(7, true); 
+frontBaseboard1.position.set(-6.5, 0.15, 9.9);
+scene.add(frontBaseboard1);
+
+const frontBaseboard2 = createBaseboard(7, true); 
+frontBaseboard2.position.set(6.5, 0.15, 9.9);
+scene.add(frontBaseboard2);
 
 // Enhanced chair creation
 function createChair() {
