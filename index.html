@@ -582,6 +582,18 @@ function playWaterSound() {
   waterSound.currentTime = 0;
   waterSound.play().catch(e => console.warn('Error playing water sound:', e));
 }
+const phoneSound = new Audio('/Phone_ringing_in_the.mp3');
+phoneSound.onerror = () => {
+  console.warn('Failed to load phone ringing sound');
+};
+function playPhoneSound() {
+  if (phoneSound.error) {
+    console.warn('Phone sound not available');
+    return;
+  }
+  phoneSound.currentTime = 0;
+  phoneSound.play().catch(e => console.warn('Error playing phone sound:', e));
+}
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -627,6 +639,8 @@ function updateAmbientInfo() {
       playChildrenSound();
     } else if (newEvent.includes('Water dispenser')) {
       playWaterSound();
+    } else if (newEvent.includes('Phone')) {
+      playPhoneSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
