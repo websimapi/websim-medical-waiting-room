@@ -1,185 +1,35 @@
-<html><head><base href="." /><title>A.I. Medical Waiting Room - 3D</title><style>
+<html><head><base href="." /><title>A.I. Medical Waiting Room</title>
+<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+  }
+}
+</script>
+<style>
 body {
-  font-family: Arial, sans-serif;
   margin: 0;
-  padding: 20px;
-  background-color: #f0f4f8;
-  perspective: 1000px;
-}
-
-.waiting-room {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
-}
-
-.scene {
-  position: relative;
-  width: 100%;
-  height: 400px;
+  padding: 0;
   overflow: hidden;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #e6e6fa 0%, #d8d8f0 100%);
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  transform: rotateX(20deg) rotateY(0deg);
-  transform-style: preserve-3d;
-  animation: roomRotate 30s infinite linear;
+  font-family: Arial, sans-serif;
 }
-
-.floor {
-  position: absolute;
+canvas {
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, #f0f0f0 25%, #e0e0e0 25%, #e0e0e0 50%, #f0f0f0 50%, #f0f0f0 75%, #e0e0e0 75%);
-  background-size: 40px 40px;
-  transform: rotateX(90deg) translateZ(-200px);
 }
-
-.wall {
-  position: absolute;
-  width: 100%;
-  height: 400px;
-  background: linear-gradient(180deg, #e6e6fa 0%, #d8d8f0 100%);
-  transform-origin: top;
-}
-
-.wall.back {
-  transform: translateZ(-400px);
-}
-
-.wall.left {
-  width: 400px;
-  transform: rotateY(90deg) translateZ(-400px);
-}
-
-.wall.right {
-  width: 400px;
-  transform: rotateY(-90deg) translateZ(0);
-}
-
-.patient {
-  position: absolute;
-  animation: patientMove 25s ease-in-out infinite;
-  transform-origin: center;
-  transform-style: preserve-3d;
-  filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
-}
-
-.nurse {
-  position: absolute;
-  animation: nurseWalk 30s ease-in-out infinite;
-  transform-origin: center;
-  transform-style: preserve-3d;
-  filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
-}
-
-.clock {
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  font-size: 24px;
-  font-family: monospace;
-  background: #fff;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  border: 1px solid #ddd;
-  transform: translateZ(10px);
-}
-
-.furniture {
-  transform-style: preserve-3d;
-  position: absolute;
-}
-
-.magazine-rack {
-  left: 20px;
-  bottom: 20px;
-  width: 100px;
-  height: 150px;
-  transform: translateZ(20px);
-}
-
-.plant {
-  right: 30px;
-  bottom: 20px;
-  width: 80px;
-  height: 120px;
-  transform: translateZ(30px);
-}
-
-.chair {
-  width: 60px;
-  height: 80px;
-  position: absolute;
-  transform-style: preserve-3d;
-}
-
-.window {
-  right: 150px;
-  top: 20px;
-  width: 120px;
-  height: 160px;
-  transform: translateZ(-5px);
-}
-
-.chair-1 { left: 120px; bottom: 50px; transform: translateZ(40px); }
-.chair-2 { left: 200px; bottom: 50px; transform: translateZ(40px); }
-.chair-3 { left: 280px; bottom: 50px; transform: translateZ(40px); }
-.chair-4 { right: 120px; bottom: 50px; transform: translateZ(40px); }
-
-.reception-desk {
-  top: 30px;
-  left: 30px;
-  width: 150px;
-  height: 80px;
-  transform: translateZ(50px);
-}
-
-.water-dispenser {
-  right: 50px;
-  top: 200px;
-  width: 40px;
-  height: 100px;
-  transform: translateZ(25px);
-}
-
-@keyframes roomRotate {
-  0% { transform: rotateX(20deg) rotateY(0deg); }
-  50% { transform: rotateX(20deg) rotateY(180deg); }
-  100% { transform: rotateX(20deg) rotateY(360deg); }
-}
-
-@keyframes patientMove {
-  0% { left: 10%; top: 50%; transform: translateZ(30px) scale(1) rotate(2deg); }
-  20% { left: 30%; top: 30%; transform: translateZ(30px) scale(0.95) rotate(-2deg); }
-  40% { left: 50%; top: 60%; transform: translateZ(30px) scale(1.05) rotate(3deg); }
-  60% { left: 70%; top: 40%; transform: translateZ(30px) scale(0.9) rotate(-1deg); }
-  80% { left: 40%; top: 45%; transform: translateZ(30px) scale(1.1) rotate(2deg); }
-  100% { left: 10%; top: 50%; transform: translateZ(30px) scale(1) rotate(2deg); }
-}
-
-@keyframes nurseWalk {
-  0% { right: 0; top: 20%; transform: translateZ(35px) scaleX(1) translateY(0); }
-  25% { right: 30%; top: 30%; transform: translateZ(35px) scaleX(-1) translateY(-5px); }
-  50% { right: 70%; top: 20%; transform: translateZ(35px) scaleX(1) translateY(0); }
-  75% { right: 40%; top: 40%; transform: translateZ(35px) scaleX(-1) translateY(-5px); }
-  100% { right: 0; top: 20%; transform: translateZ(35px) scaleX(1) translateY(0); }
-}
-
 .stats {
+  position: absolute;
+  top: 10px;
+  left: 10px;
   padding: 15px;
-  background: #e9ecef;
+  background: rgba(233, 236, 239, 0.8);
   border-radius: 5px;
-  margin-top: 10px;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  color: #333;
+  font-family: Arial, sans-serif;
 }
-
 .ambient-info {
   font-size: 14px;
   color: #666;
@@ -188,120 +38,150 @@ body {
   padding: 10px;
   border-left: 3px solid #ccc;
 }
-
-</style></head><body>
-<div class="waiting-room">
-  <h1>Medical Office Waiting Room Simulation (3D)</h1>
-  <div class="scene">
-    <div class="floor"></div>
-    <div class="wall back"></div>
-    <div class="wall left"></div>
-    <div class="wall right"></div>
-    
-    <div class="clock" id="clock">12:00</div>
-    
-    <svg class="window" viewBox="0 0 120 160">
-      <rect x="0" y="0" width="120" height="160" fill="#87CEEB" />
-      <rect x="10" y="10" width="100" height="140" fill="#F0F8FF" />
-      <path d="M 60 10 L 60 150" stroke="#666" stroke-width="2"/>
-      <path d="M 10 80 L 110 80" stroke="#666" stroke-width="2"/>
-      <circle cx="80" cy="50" r="15" fill="#fff" opacity="0.7"/>
-      <circle cx="30" cy="100" r="10" fill="#fff" opacity="0.7"/>
-    </svg>
-
-    <svg class="water-dispenser" viewBox="0 0 40 100">
-      <rect x="5" y="0" width="30" height="60" fill="#B0E0E6"/>
-      <rect x="10" y="60" width="20" height="40" fill="#4682B4"/>
-      <circle cx="20" cy="20" r="8" fill="#87CEEB"/>
-      <rect x="18" y="70" width="4" height="10" fill="#1E90FF"/>
-    </svg>
-
-    <svg class="patient" width="50" height="50">
-      <circle cx="25" cy="25" r="20" fill="#FFB6C1"/>
-      <circle cx="20" cy="20" r="5" fill="#333"/>
-      <circle cx="30" cy="20" r="5" fill="#333"/>
-      <path d="M 15 30 Q 25 35 35 30" stroke="#333" fill="none"/>
-      <path d="M 15 15 Q 25 10 35 15" stroke="#333" fill="none" stroke-width="2"/>
-    </svg>
-
-    <svg class="nurse" width="50" height="50">
-      <rect x="10" y="10" width="30" height="35" fill="white"/>
-      <circle cx="25" cy="20" r="15" fill="#87CEEB"/>
-      <circle cx="20" cy="15" r="3" fill="#333"/>
-      <circle cx="30" cy="15" r="3" fill="#333"/>
-      <path d="M 15 25 Q 25 30 35 25" stroke="#333" fill="none"/>
-      <rect x="15" y="5" width="20" height="10" fill="white"/>
-      <path d="M 20 35 L 40 35" stroke="red" stroke-width="2"/>
-    </svg>
-
-    <svg class="magazine-rack" viewBox="0 0 100 150">
-      <rect x="10" y="10" width="80" height="130" fill="#8B4513"/>
-      <rect x="15" y="20" width="70" height="20" fill="#DEB887"/>
-      <rect x="15" y="50" width="70" height="20" fill="#DEB887"/>
-      <rect x="15" y="80" width="70" height="20" fill="#DEB887"/>
-      <rect x="20" y="25" width="50" height="10" fill="#FFF" opacity="0.8"/>
-      <rect x="20" y="55" width="50" height="10" fill="#FFF" opacity="0.8"/>
-      <rect x="20" y="85" width="50" height="10" fill="#FFF" opacity="0.8"/>
-    </svg>
-
-    <svg class="plant" viewBox="0 0 80 120">
-      <rect x="30" y="90" width="20" height="30" fill="#8B4513"/>
-      <path d="M 40 90 Q 20 60 30 30 Q 40 60 50 30 Q 60 60 40 90" fill="#228B22"/>
-      <path d="M 40 90 Q 10 70 20 40" stroke="#32CD32" fill="none" stroke-width="2"/>
-      <path d="M 40 90 Q 70 70 60 40" stroke="#32CD32" fill="none" stroke-width="2"/>
-    </svg>
-
-    <svg class="chair chair-1" viewBox="0 0 60 80">
-      <rect x="10" y="50" width="40" height="10" fill="#4169E1"/>
-      <rect x="10" y="10" width="40" height="40" fill="#4169E1"/>
-      <rect x="12" y="12" width="36" height="36" fill="#5179F1"/>
-    </svg>
-
-    <svg class="chair chair-2" viewBox="0 0 60 80">
-      <rect x="10" y="50" width="40" height="10" fill="#4169E1"/>
-      <rect x="10" y="10" width="40" height="40" fill="#4169E1"/>
-      <rect x="12" y="12" width="36" height="36" fill="#5179F1"/>
-    </svg>
-
-    <svg class="chair chair-3" viewBox="0 0 60 80">
-      <rect x="10" y="50" width="40" height="10" fill="#4169E1"/>
-      <rect x="10" y="10" width="40" height="40" fill="#4169E1"/>
-      <rect x="12" y="12" width="36" height="36" fill="#5179F1"/>
-    </svg>
-
-    <svg class="chair chair-4" viewBox="0 0 60 80">
-      <rect x="10" y="50" width="40" height="10" fill="#4169E1"/>
-      <rect x="10" y="10" width="40" height="40" fill="#4169E1"/>
-      <rect x="12" y="12" width="36" height="36" fill="#5179F1"/>
-    </svg>
-
-    <svg class="reception-desk" viewBox="0 0 150 80">
-      <rect x="10" y="10" width="130" height="60" fill="#A0522D"/>
-      <rect x="15" y="15" width="120" height="50" fill="#DEB887"/>
-      <rect x="20" y="20" width="30" height="20" fill="#D3D3D3"/>
-      <rect x="60" y="25" width="60" height="5" fill="#A0522D"/>
-    </svg>
-  </div>
-
-  <div class="stats">
-    <h3>Waiting Room Statistics:</h3>
-    <p>Current Patients: <span id="patientCount">4</span></p>
-    <p>Average Wait Time: <span id="waitTime">23</span> minutes</p>
-    <p>Next Patient: <span id="nextPatient">Johnson, Sarah</span></p>
-    <p>Room Temperature: <span id="temperature">72°F</span></p>
-    <div class="ambient-info" id="ambientInfo"></div>
-  </div>
+</style>
+</head><body>
+<div class="stats">
+  <h3>Waiting Room Statistics:</h3>
+  <p>Current Patients: <span id="patientCount">4</span></p>
+  <p>Average Wait Time: <span id="waitTime">23</span> minutes</p>
+  <p>Next Patient: <span id="nextPatient">Johnson, Sarah</span></p>
+  <p>Room Temperature: <span id="temperature">72°F</span></p>
+  <div class="ambient-info" id="ambientInfo"></div>
 </div>
 
-<script>
-function updateClock() {
-  const clockElement = document.getElementById('clock');
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  clockElement.textContent = `${hours}:${minutes}`;
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf0f4f8);
+
+// Camera setup
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 5, 10);
+
+// Renderer setup
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 2, 0);
+controls.update();
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 5, 5);
+directionalLight.castShadow = true;
+scene.add(directionalLight);
+
+// Floor
+const floorGeometry = new THREE.PlaneGeometry(20, 20);
+const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xe6e6fa });
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Walls
+const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+const backWall = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 10),
+  wallMaterial
+);
+backWall.position.z = -10;
+backWall.position.y = 5;
+scene.add(backWall);
+
+const leftWall = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 10),
+  wallMaterial
+);
+leftWall.position.x = -10;
+leftWall.position.y = 5;
+leftWall.rotation.y = Math.PI / 2;
+scene.add(leftWall);
+
+// Chairs
+function createChair() {
+  const chairGroup = new THREE.Group();
+  
+  const seatGeometry = new THREE.BoxGeometry(1, 0.1, 1);
+  const seatMaterial = new THREE.MeshStandardMaterial({ color: 0x4169e1 });
+  const seat = new THREE.Mesh(seatGeometry, seatMaterial);
+  seat.position.y = 0.5;
+  
+  const backGeometry = new THREE.BoxGeometry(1, 1.2, 0.1);
+  const back = new THREE.Mesh(backGeometry, seatMaterial);
+  back.position.y = 1.1;
+  back.position.z = -0.45;
+  
+  chairGroup.add(seat);
+  chairGroup.add(back);
+  
+  return chairGroup;
 }
 
+// Add chairs
+const chairs = [];
+for(let i = 0; i < 4; i++) {
+  const chair = createChair();
+  chair.position.set(-3 + (i * 2), 0, -8);
+  scene.add(chair);
+  chairs.push(chair);
+}
+
+// Reception desk
+const deskGeometry = new THREE.BoxGeometry(4, 1.2, 1);
+const deskMaterial = new THREE.MeshStandardMaterial({ color: 0xa0522d });
+const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+desk.position.set(-8, 0.6, -8);
+scene.add(desk);
+
+// Plant
+function createPlant() {
+  const plantGroup = new THREE.Group();
+  
+  const potGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.6);
+  const potMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+  const pot = new THREE.Mesh(potGeometry, potMaterial);
+  
+  const leavesGeometry = new THREE.SphereGeometry(0.6, 8, 8);
+  const leavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+  const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+  leaves.position.y = 0.6;
+  
+  plantGroup.add(pot);
+  plantGroup.add(leaves);
+  
+  return plantGroup;
+}
+
+const plant = createPlant();
+plant.position.set(8, 0, -8);
+scene.add(plant);
+
+// Animation
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+// Window resize handler
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Stats updates
 function updateStats() {
   const patientCount = document.getElementById('patientCount');
   const waitTime = document.getElementById('waitTime');
@@ -336,13 +216,12 @@ function updateAmbientInfo() {
   ambientInfo.textContent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
 }
 
-setInterval(updateClock, 1000);
 setInterval(updateStats, 30000);
 setInterval(updateAmbientInfo, 8000);
 
-updateClock();
 updateStats();
 updateAmbientInfo();
+animate();
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
