@@ -594,6 +594,18 @@ function playPhoneSound() {
   phoneSound.currentTime = 0;
   phoneSound.play().catch(e => console.warn('Error playing phone sound:', e));
 }
+const conversationSound = new Audio('/Quiet_conversation_a.mp3');
+conversationSound.onerror = () => {
+  console.warn('Failed to load conversation sound');
+};
+function playConversationSound() {
+  if (conversationSound.error) {
+    console.warn('Conversation sound not available');
+    return;
+  }
+  conversationSound.currentTime = 0;
+  conversationSound.play().catch(e => console.warn('Error playing conversation sound:', e));
+}
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -641,6 +653,8 @@ function updateAmbientInfo() {
       playWaterSound();
     } else if (newEvent.includes('Phone')) {
       playPhoneSound();
+    } else if (newEvent.includes('conversation')) {
+      playConversationSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
