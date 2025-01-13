@@ -824,6 +824,8 @@ function updateAmbientInfo() {
       playSanitizerSound();
     } else if (newEvent.includes('whoosh')) {
       playDoorWhooshSound();
+    } else if (newEvent.includes('Clock')) {
+      playClockTickSound();
     } else if (newEvent.includes('typing')) {
       playRandomTypingSound();
     }
@@ -857,6 +859,18 @@ function playRandomTypingSound() {
   const randomSound = typingSounds[Math.floor(Math.random() * typingSounds.length)];
   randomSound.currentTime = 0;
   randomSound.play().catch(e => console.warn('Error playing typing sound:', e));
+}
+const clockTickSound = new Audio('/Clock_ticking_softly.mp3');
+clockTickSound.onerror = () => {
+  console.warn('Failed to load clock ticking sound');
+};
+function playClockTickSound() {
+  if (clockTickSound.error) {
+    console.warn('Clock ticking sound not available');
+    return;
+  }
+  clockTickSound.currentTime = 0;
+  clockTickSound.play().catch(e => console.warn('Error playing clock ticking sound:', e));
 }</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
