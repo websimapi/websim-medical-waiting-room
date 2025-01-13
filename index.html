@@ -67,6 +67,7 @@ canvas {
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { PMREMGenerator } from 'three';
 
 // Add function to create warning sign
 function createWarningSign() {
@@ -110,18 +111,28 @@ function createWarningSign() {
   return signGroup;
 }
 
+// Add function to create glass material
+function createEnhancedGlassMaterial() {
+  return new THREE.MeshPhysicalMaterial({
+    transparent: true,
+    opacity: 0.3,
+    roughness: 0.05,
+    transmission: 0.95,
+    thickness: 0.05,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1,
+    ior: 1.5,
+    envMapIntensity: 1.5,
+    reflectivity: 0.9,
+    metalness: 0.05
+  });
+}
+
 // Add function to create glass wall
 function createGlassWall(width, height) {
   const glass = new THREE.Mesh(
-    new THREE.PlaneGeometry(width, height),
-    new THREE.MeshPhysicalMaterial({ 
-      transparent: true,
-      opacity: 0.3,
-      roughness: 0.1,
-      transmission: 0.9,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.1
-    })
+    new THREE.PlaneGeometry(width, height, 50, 50),
+    createEnhancedGlassMaterial()
   );
   return glass;
 }
@@ -132,15 +143,8 @@ function createGlassDoor() {
   
   // Door glass
   const glass = new THREE.Mesh(
-    new THREE.PlaneGeometry(2, 4),
-    new THREE.MeshPhysicalMaterial({
-      transparent: true, 
-      opacity: 0.3,
-      roughness: 0.1,
-      transmission: 0.9,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.1
-    })
+    new THREE.PlaneGeometry(2, 4, 50, 50),
+    createEnhancedGlassMaterial()
   );
   
   // Door frame
@@ -176,8 +180,19 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.set(0, 5, 10);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.physicallyCorrectLights = true;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1;
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+// Generate environment map for reflections
+const pmremGenerator = new PMREMGenerator(renderer);
+const envTexture = pmremGenerator.fromScene(scene).texture;
+scene.environment = envTexture;
+pmremGenerator.dispose();
+
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -228,20 +243,35 @@ renderer.domElement.addEventListener('touchend', () => {
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
 directionalLight.position.set(5, 5, 5);
 directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.width = 2048;
-directionalLight.shadow.mapSize.height = 2048;
+directionalLight.shadow.bias = -0.001;
+directionalLight.shadow.mapSize.width = 4096;
+directionalLight.shadow.mapSize.height = 4096;
+directionalLight.shadow.camera.near = 0.1;
+directionalLight.shadow.camera.far = 30;
+directionalLight.shadow.camera.left = -10;
+directionalLight.shadow.camera.right = 10;
+directionalLight.shadow.camera.top = 10;
+directionalLight.shadow.camera.bottom = -10;
 scene.add(directionalLight);
 
 // Add point lights for more realistic lighting
-const pointLight1 = new THREE.PointLight(0xffffff, 0.5);
+const pointLight1 = new THREE.PointLight(0xffffff, 0.8);
 pointLight1.position.set(0, 8, 0);
+pointLight1.castShadow = true;
+pointLight1.shadow.bias = -0.001;
+pointLight1.shadow.mapSize.width = 2048;
+pointLight1.shadow.mapSize.height = 2048;
 scene.add(pointLight1);
 
-const pointLight2 = new THREE.PointLight(0xffffff, 0.3);
+const pointLight2 = new THREE.PointLight(0xffffff, 0.6);
 pointLight2.position.set(-5, 8, -5);
+pointLight2.castShadow = true;
+pointLight2.shadow.bias = -0.001;
+pointLight2.shadow.mapSize.width = 2048;
+pointLight2.shadow.mapSize.height = 2048;
 scene.add(pointLight2);
 
 // Enhanced floor with texture
@@ -592,6 +622,15 @@ function animate() {
   if(door) {
     door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
   }
+  
+  // Add time-based window reflections
+  const windows = scene.children.filter(child => 
+    child.material && child.material.type === 'MeshPhysicalMaterial'
+  );
+
+  windows.forEach(window => {
+    window.material.envMapIntensity = 1.2 + Math.sin(Date.now() * 0.001) * 0.2;
+  });
   
   renderer.render(scene, camera);
 }
