@@ -166,13 +166,11 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true
 });
 renderer.physicallyCorrectLights = true;
-// Enhance environment lighting for glass
 renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.8;
 const pmremGenerator = new PMREMGenerator(renderer);
 const envTexture = pmremGenerator.fromScene(scene).texture;
-// Enhance environment lighting for glass
 scene.environment = envTexture;
 pmremGenerator.dispose();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -211,7 +209,6 @@ renderer.domElement.addEventListener('touchend', () => {
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
 scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
-// Adjust lighting for better glass reflections
 directionalLight.position.set(10, 8, 5);
 directionalLight.intensity = 0.7;
 directionalLight.castShadow = true;
@@ -226,8 +223,7 @@ directionalLight.shadow.camera.top = 10;
 directionalLight.shadow.camera.bottom = -10;
 scene.add(directionalLight);
 const pointLight1 = new THREE.PointLight(0xffffff, 0.8);
-// Adjust point lights for glass
-pointLight1.position.set(0, 10, 0); 
+pointLight1.position.set(0, 10, 0);
 pointLight1.intensity = 0.6;
 pointLight1.castShadow = true;
 pointLight1.shadow.bias = -0.001;
@@ -315,13 +311,11 @@ scene.add(frontBaseboard1);
 const frontBaseboard2 = createBaseboard(5, true);
 frontBaseboard2.position.set(7.5, 0.15, 9.9);
 scene.add(frontBaseboard2);
-// Add missing trim piece at wall end
-const frontBaseboard3 = createBaseboard(1, true);
-frontBaseboard3.position.set(5.5, 0.15, 9.9);
+const frontBaseboard3 = createBaseboard(2, true);
+frontBaseboard3.position.set(6, 0.15, 9.9);
 scene.add(frontBaseboard3);
-// Add missing trim piece at other wall end 
-const frontBaseboard4 = createBaseboard(1, true);
-frontBaseboard4.position.set(2.5, 0.15, 9.9);
+const frontBaseboard4 = createBaseboard(2, true);
+frontBaseboard4.position.set(2, 0.15, 9.9);
 scene.add(frontBaseboard4);
 function createChair() {
   const chairGroup = new THREE.Group();
