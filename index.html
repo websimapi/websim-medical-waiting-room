@@ -102,16 +102,18 @@ function createWarningSign() {
 function createEnhancedGlassMaterial() {
   return new THREE.MeshPhysicalMaterial({
     transparent: true,
-    opacity: 0.3,
-    roughness: 0.05,
-    transmission: 0.95,
-    thickness: 0.02,
+    opacity: 0.2,
+    roughness: 0.02,
+    transmission: 0.98,
+    thickness: 0.05,
     clearcoat: 1.0,
     clearcoatRoughness: 0.1,
-    ior: 1.5,
-    envMapIntensity: 1.2,
-    reflectivity: 0.8,
-    metalness: 0.02
+    ior: 1.52,
+    envMapIntensity: 1.5,
+    reflectivity: 0.9,
+    metalness: 0.0,
+    attenuationColor: new THREE.Color(0xffffff),
+    attenuationDistance: 5.0
   });
 }
 function createGlassWall(width, height) {
@@ -164,12 +166,13 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true
 });
 renderer.physicallyCorrectLights = true;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+// Enhance environment lighting for glass
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+renderer.toneMappingExposure = 0.8;
 const pmremGenerator = new PMREMGenerator(renderer);
 const envTexture = pmremGenerator.fromScene(scene).texture;
+// Enhance environment lighting for glass
 scene.environment = envTexture;
 pmremGenerator.dispose();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -208,7 +211,9 @@ renderer.domElement.addEventListener('touchend', () => {
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
 scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
-directionalLight.position.set(5, 5, 5);
+// Adjust lighting for better glass reflections
+directionalLight.position.set(10, 8, 5);
+directionalLight.intensity = 0.7;
 directionalLight.castShadow = true;
 directionalLight.shadow.bias = -0.001;
 directionalLight.shadow.mapSize.width = 4096;
@@ -221,14 +226,17 @@ directionalLight.shadow.camera.top = 10;
 directionalLight.shadow.camera.bottom = -10;
 scene.add(directionalLight);
 const pointLight1 = new THREE.PointLight(0xffffff, 0.8);
-pointLight1.position.set(0, 8, 0);
+// Adjust point lights for glass
+pointLight1.position.set(0, 10, 0); 
+pointLight1.intensity = 0.6;
 pointLight1.castShadow = true;
 pointLight1.shadow.bias = -0.001;
 pointLight1.shadow.mapSize.width = 2048;
 pointLight1.shadow.mapSize.height = 2048;
 scene.add(pointLight1);
 const pointLight2 = new THREE.PointLight(0xffffff, 0.6);
-pointLight2.position.set(-5, 8, -5);
+pointLight2.position.set(-8, 10, -8);
+pointLight2.intensity = 0.5;
 pointLight2.castShadow = true;
 pointLight2.shadow.bias = -0.001;
 pointLight2.shadow.mapSize.width = 2048;
@@ -307,6 +315,14 @@ scene.add(frontBaseboard1);
 const frontBaseboard2 = createBaseboard(5, true);
 frontBaseboard2.position.set(7.5, 0.15, 9.9);
 scene.add(frontBaseboard2);
+// Add missing trim piece at wall end
+const frontBaseboard3 = createBaseboard(1, true);
+frontBaseboard3.position.set(5.5, 0.15, 9.9);
+scene.add(frontBaseboard3);
+// Add missing trim piece at other wall end 
+const frontBaseboard4 = createBaseboard(1, true);
+frontBaseboard4.position.set(2.5, 0.15, 9.9);
+scene.add(frontBaseboard4);
 function createChair() {
   const chairGroup = new THREE.Group();
   const seatGeometry = new THREE.BoxGeometry(1, 0.1, 1);
