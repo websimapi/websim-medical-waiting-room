@@ -547,19 +547,40 @@ const waterDispenser = createWaterDispenser();
 waterDispenser.position.set(9, 0, -8);
 scene.add(waterDispenser);
 const magazineSound = new Audio('/Magazine_page_being_.mp3');
+magazineSound.onerror = () => {
+  console.warn('Failed to load magazine sound');
+};
 const childrenSound = new Audio('/Children_playing_out.mp3');
+childrenSound.onerror = () => {
+  console.warn('Failed to load children sound');
+};
 const waterSound = new Audio('/Water_dispenser_maki (3).mp3');
+waterSound.onerror = () => {
+  console.warn('Failed to load water dispenser sound');
+};
 function playMagazineSound() {
+  if (magazineSound.error) {
+    console.warn('Magazine sound not available');
+    return;
+  }
   magazineSound.currentTime = 0;
-  magazineSound.play();
+  magazineSound.play().catch(e => console.warn('Error playing magazine sound:', e));
 }
 function playChildrenSound() {
+  if (childrenSound.error) {
+    console.warn('Children sound not available');
+    return;
+  }
   childrenSound.currentTime = 0;
-  childrenSound.play();
+  childrenSound.play().catch(e => console.warn('Error playing children sound:', e));
 }
 function playWaterSound() {
+  if (waterSound.error) {
+    console.warn('Water sound not available');
+    return;
+  }
   waterSound.currentTime = 0;
-  waterSound.play();
+  waterSound.play().catch(e => console.warn('Error playing water sound:', e));
 }
 function animate() {
   requestAnimationFrame(animate);
@@ -599,12 +620,16 @@ function updateAmbientInfo() {
   const ambientEvents = [...existingEvents, 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Someone flipping through a magazine...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
   const newEvent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
   ambientInfo.textContent = newEvent;
-  if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
-    playMagazineSound();
-  } else if (newEvent.includes('Children')) {
-    playChildrenSound();
-  } else if (newEvent.includes('Water dispenser')) {
-    playWaterSound();
+  try {
+    if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
+      playMagazineSound();
+    } else if (newEvent.includes('Children')) {
+      playChildrenSound();
+    } else if (newEvent.includes('Water dispenser')) {
+      playWaterSound();
+    }
+  } catch (e) {
+    console.warn('Error playing ambient sound:', e);
   }
 }
 setInterval(updateStats, 30000);
