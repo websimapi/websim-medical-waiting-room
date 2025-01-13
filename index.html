@@ -39,12 +39,7 @@ canvas {
   border-left: 3px solid #ccc;
 }
 .info-board {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  padding: 15px;
-  background: rgba(233, 236, 239, 0.8);
-  border-radius: 5px;
+  display: none;
 }
 .start-button {
   position: fixed;
@@ -78,13 +73,6 @@ canvas {
   <p>Next Patient: <span id="nextPatient">Johnson, Sarah</span></p>
   <p>Room Temperature: <span id="temperature">72&#xb0;F</span></p>
   <div class="ambient-info" id="ambientInfo"></div>
-</div>
-
-<div class="info-board" id="infoBoard">
-  <h4>Office Information</h4>
-  <p>Dr. Sarah Williams, MD</p>
-  <p>Hours: 9:00 AM - 5:00 PM</p>
-  <p>Emergency: (555) 555-1234</p>
 </div>
 
 <button id="startButton" class="start-button">Start Experience</button>
@@ -778,7 +766,6 @@ function startExperience() {
   isExperienceStarted = true;
   startButton.classList.add('hidden');
   document.querySelector('.stats').classList.remove('hidden');
-  document.querySelector('.info-board').classList.remove('hidden');
   setInterval(updateStats, 30000);
   setInterval(updateAmbientInfo, 8000);
   updateStats();
@@ -787,99 +774,44 @@ function startExperience() {
 }
 startButton.addEventListener('click', startExperience);
 document.querySelector('.stats').classList.add('hidden');
-document.querySelector('.info-board').classList.add('hidden');
-function animate() {
-  if (!isExperienceStarted) return;
-  requestAnimationFrame(animate);
-  plant.rotation.y += 0.001;
-  controls.update();
-  const sanitizerPump = sanitizer.children[1];
-  sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
-  const door = scene.getObjectById(doorway.id);
-  if (door) {
-    door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
-  }
-  const windows = scene.children.filter(child => child.material && child.material.type === 'MeshPhysicalMaterial');
-  windows.forEach(window => {
-    window.material.envMapIntensity = 1.2 + Math.sin(Date.now() * 0.001) * 0.2;
+function createOfficeSign() {
+  const signGroup = new THREE.Group();
+  const signGeometry = new THREE.PlaneGeometry(3, 2);
+  const signMaterial = new THREE.MeshStandardMaterial({
+    color: 0xf5f5f5,
+    roughness: 0.9,
+    metalness: 0.1
   });
-  const now = new Date();
-  const hours = now.getHours() % 12;
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
-  const milliseconds = now.getMilliseconds();
-  const hourAngle = (hours + minutes / 60) * Math.PI / 6 - Math.PI / 2;
-  const minuteAngle = (minutes + seconds / 60) * Math.PI / 30 - Math.PI / 2;
-  const secondAngle = -((seconds + milliseconds / 1000) * Math.PI / 30 - Math.PI / 2);
-  if (clock.hourHand) {
-    clock.hourHand.rotation.z = hourAngle;
-    clock.minuteHand.rotation.z = minuteAngle;
-    clock.secondHand.rotation.z = secondAngle;
-  }
-  renderer.render(scene, camera);
+  const sign = new THREE.Mesh(signGeometry, signMaterial);
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 512;
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#ffffff';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = '#000000';
+  context.font = 'bold 60px Arial';
+  context.textAlign = 'center';
+  context.fillText('Office Information', canvas.width / 2, 100);
+  context.font = '50px Arial';
+  context.fillText('Dr. Sarah Williams, MD', canvas.width / 2, 200);
+  context.fillText('Hours: 9:00 AM - 5:00 PM', canvas.width / 2, 300);
+  context.fillText('Emergency: (555) 555-1234', canvas.width / 2, 400);
+  const texture = new THREE.CanvasTexture(canvas);
+  const textGeometry = new THREE.PlaneGeometry(2.9, 1.9);
+  const textMaterial = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true
+  });
+  const text = new THREE.Mesh(textGeometry, textMaterial);
+  text.position.z = 0.01;
+  signGroup.add(sign);
+  signGroup.add(text);
+  return signGroup;
 }
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-function updateStats() {
-  const patientCount = document.getElementById('patientCount');
-  const waitTime = document.getElementById('waitTime');
-  const nextPatient = document.getElementById('nextPatient');
-  const temperature = document.getElementById('temperature');
-  const patients = ['Johnson, Sarah', 'Smith, Michael', 'Williams, Emma', 'Brown, David', 'Miller, Lisa', 'Davis, John', 'Wilson, Emily'];
-  patientCount.textContent = Math.floor(Math.random() * 3) + 3;
-  waitTime.textContent = Math.floor(Math.random() * 20) + 15;
-  nextPatient.textContent = patients[Math.floor(Math.random() * patients.length)];
-  const temp = Math.floor(Math.random() * 3) + 71;
-  temperature.textContent = `${temp}°F`;
-  thermostat.updateTemp(temp);
-}
-function updateAmbientInfo() {
-  const ambientInfo = document.getElementById('ambientInfo');
-  const existingEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...'];
-  const ambientEvents = [...existingEvents, 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Someone flipping through a magazine...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
-  const newEvent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
-  ambientInfo.textContent = newEvent;
-  try {
-    if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
-      playMagazineSound();
-    } else if (newEvent.includes('Children')) {
-      playChildrenSound();
-    } else if (newEvent.includes('Water dispenser')) {
-      playWaterSound();
-    } else if (newEvent.includes('Phone')) {
-      playPhoneSound();
-    } else if (newEvent.includes('conversation')) {
-      playConversationSound();
-    } else if (newEvent.includes('cough')) {
-      playRandomCoughSound();
-    } else if (newEvent.includes('footsteps')) {
-      playFootstepsSound();
-    } else if (newEvent.includes('Pen')) {
-      playRandomPenSound();
-    } else if (newEvent.includes('beep')) {
-      playBeepSound();
-    } else if (newEvent.includes('air conditioning')) {
-      playHumSound();
-    } else if (newEvent.includes('Door opening')) {
-      playDoorOpenSound();
-    } else if (newEvent.includes('sanitizer')) {
-      playSanitizerSound();
-    } else if (newEvent.includes('whoosh')) {
-      playDoorWhooshSound();
-    } else if (newEvent.includes('Clock')) {
-      playClockTickSound();
-    } else if (newEvent.includes('typing')) {
-      playRandomTypingSound();
-    } else if (newEvent.includes('adjusting their mask')) {
-      playMaskAdjustSound();
-    }
-  } catch (e) {
-    console.warn('Error playing ambient sound:', e);
-  }
-}
+const officeSign = createOfficeSign();
+officeSign.position.set(-8, 6, -9.8);
+scene.add(officeSign);
 const sanitizerSound = new Audio('/Hand_sanitizer_being.mp3');
 sanitizerSound.onerror = () => {
   console.warn('Failed to load hand sanitizer sound');
@@ -971,6 +903,98 @@ function createThermostat() {
 }
 const thermostat = createThermostat();
 thermostat.position.set(-5, 5, -9.85);
-scene.add(thermostat);</script>
+scene.add(thermostat);
+function animate() {
+  if (!isExperienceStarted) return;
+  requestAnimationFrame(animate);
+  plant.rotation.y += 0.001;
+  controls.update();
+  const sanitizerPump = sanitizer.children[1];
+  sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
+  const door = scene.getObjectById(doorway.id);
+  if (door) {
+    door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
+  }
+  const windows = scene.children.filter(child => child.material && child.material.type === 'MeshPhysicalMaterial');
+  windows.forEach(window => {
+    window.material.envMapIntensity = 1.2 + Math.sin(Date.now() * 0.001) * 0.2;
+  });
+  const now = new Date();
+  const hours = now.getHours() % 12;
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+  const milliseconds = now.getMilliseconds();
+  const hourAngle = (hours + minutes / 60) * Math.PI / 6 - Math.PI / 2;
+  const minuteAngle = (minutes + seconds / 60) * Math.PI / 30 - Math.PI / 2;
+  const secondAngle = -((seconds + milliseconds / 1000) * Math.PI / 30 - Math.PI / 2);
+  if (clock.hourHand) {
+    clock.hourHand.rotation.z = hourAngle;
+    clock.minuteHand.rotation.z = minuteAngle;
+    clock.secondHand.rotation.z = secondAngle;
+  }
+  renderer.render(scene, camera);
+}
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+function updateStats() {
+  const patientCount = document.getElementById('patientCount');
+  const waitTime = document.getElementById('waitTime');
+  const nextPatient = document.getElementById('nextPatient');
+  const temperature = document.getElementById('temperature');
+  const patients = ['Johnson, Sarah', 'Smith, Michael', 'Williams, Emma', 'Brown, David', 'Miller, Lisa', 'Davis, John', 'Wilson, Emily'];
+  patientCount.textContent = Math.floor(Math.random() * 3) + 3;
+  waitTime.textContent = Math.floor(Math.random() * 20) + 15;
+  nextPatient.textContent = patients[Math.floor(Math.random() * patients.length)];
+  const temp = Math.floor(Math.random() * 3) + 71;
+  temperature.textContent = `${temp}°F`;
+  thermostat.updateTemp(temp);
+}
+function updateAmbientInfo() {
+  const ambientInfo = document.getElementById('ambientInfo');
+  const existingEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...'];
+  const ambientEvents = [...existingEvents, 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Someone flipping through a magazine...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
+  const newEvent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
+  ambientInfo.textContent = newEvent;
+  try {
+    if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
+      playMagazineSound();
+    } else if (newEvent.includes('Children')) {
+      playChildrenSound();
+    } else if (newEvent.includes('Water dispenser')) {
+      playWaterSound();
+    } else if (newEvent.includes('Phone')) {
+      playPhoneSound();
+    } else if (newEvent.includes('conversation')) {
+      playConversationSound();
+    } else if (newEvent.includes('cough')) {
+      playRandomCoughSound();
+    } else if (newEvent.includes('footsteps')) {
+      playFootstepsSound();
+    } else if (newEvent.includes('Pen')) {
+      playRandomPenSound();
+    } else if (newEvent.includes('beep')) {
+      playBeepSound();
+    } else if (newEvent.includes('air conditioning')) {
+      playHumSound();
+    } else if (newEvent.includes('Door opening')) {
+      playDoorOpenSound();
+    } else if (newEvent.includes('sanitizer')) {
+      playSanitizerSound();
+    } else if (newEvent.includes('whoosh')) {
+      playDoorWhooshSound();
+    } else if (newEvent.includes('Clock')) {
+      playClockTickSound();
+    } else if (newEvent.includes('typing')) {
+      playRandomTypingSound();
+    } else if (newEvent.includes('adjusting their mask')) {
+      playMaskAdjustSound();
+    }
+  } catch (e) {
+    console.warn('Error playing ambient sound:', e);
+  }
+}</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
