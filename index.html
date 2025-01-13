@@ -122,7 +122,33 @@ function createGlassWall(width, height) {
 }
 function createGlassDoor() {
   const doorGroup = new THREE.Group();
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(2, 4, 50, 50), createEnhancedGlassMaterial());
+  const doorLeft = new THREE.Group();
+  const doorRight = new THREE.Group();
+  const glassLeft = new THREE.Mesh(new THREE.PlaneGeometry(1, 4, 25, 25), createEnhancedGlassMaterial());
+  const glassRight = new THREE.Mesh(new THREE.PlaneGeometry(1, 4, 25, 25), createEnhancedGlassMaterial());
+  const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(0.1, 4, 0.08), new THREE.MeshStandardMaterial({
+    color: 0x505050,
+    roughness: 0.7,
+    metalness: 0.3
+  }));
+  const frameRight = frameLeft.clone();
+  const handleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4);
+  const handleMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc0c0c0
+  });
+  const handleLeft = new THREE.Mesh(handleGeometry, handleMaterial);
+  handleLeft.rotation.x = Math.PI / 2;
+  handleLeft.position.set(0.4, 0, 0.1);
+  const handleRight = handleLeft.clone();
+  handleRight.position.x = -0.4;
+  doorLeft.add(glassLeft);
+  doorLeft.add(frameLeft);
+  doorLeft.add(handleLeft);
+  doorLeft.position.x = -0.5;
+  doorRight.add(glassRight);
+  doorRight.add(frameRight);
+  doorRight.add(handleRight);
+  doorRight.position.x = 0.5;
   const frameTop = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.1, 0.08), new THREE.MeshStandardMaterial({
     color: 0x505050,
     roughness: 0.7,
@@ -130,28 +156,9 @@ function createGlassDoor() {
   }));
   frameTop.position.y = 2.05;
   frameTop.position.z = -0.04;
-  const frameSides = [];
-  for (let i = 0; i < 2; i++) {
-    const side = new THREE.Mesh(new THREE.BoxGeometry(0.1, 4, 0.08), new THREE.MeshStandardMaterial({
-      color: 0x505050,
-      roughness: 0.7,
-      metalness: 0.3
-    }));
-    side.position.x = i === 0 ? -1.05 : 1.05;
-    side.position.z = -0.04;
-    frameSides.push(side);
-  }
-  const handleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4);
-  const handleMaterial = new THREE.MeshStandardMaterial({
-    color: 0xc0c0c0
-  });
-  const handle = new THREE.Mesh(handleGeometry, handleMaterial);
-  handle.rotation.x = Math.PI / 2;
-  handle.position.set(0.8, 0, 0.1);
-  doorGroup.add(glass);
+  doorGroup.add(doorLeft);
+  doorGroup.add(doorRight);
   doorGroup.add(frameTop);
-  frameSides.forEach(side => doorGroup.add(side));
-  doorGroup.add(handle);
   return doorGroup;
 }
 function createCoffeeTable() {
@@ -557,6 +564,8 @@ scene.add(sanitizer);
 const waterDispenser = createWaterDispenser();
 waterDispenser.position.set(9, 0, -8);
 scene.add(waterDispenser);
+let doorOpen = false;
+let doorAnimationProgress = 0;
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -568,7 +577,16 @@ function animate() {
   });
   const door = scene.getObjectById(doorway.id);
   if (door) {
-    door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
+    const leftPanel = door.children[0];
+    const rightPanel = door.children[1];
+    if (doorOpen) {
+      doorAnimationProgress = Math.min(doorAnimationProgress + 0.05, 1);
+    } else {
+      doorAnimationProgress = Math.max(doorAnimationProgress - 0.05, 0);
+    }
+    const openAmount = THREE.MathUtils.smoothstep(doorAnimationProgress, 0, 1);
+    leftPanel.position.x = -0.5 - openAmount * 0.9;
+    rightPanel.position.x = 0.5 + openAmount * 0.9;
   }
   const windows = scene.children.filter(child => child.material && child.material.type === 'MeshPhysicalMaterial');
   windows.forEach(window => {
@@ -596,6 +614,12 @@ function updateAmbientInfo() {
   const ambientInfo = document.getElementById('ambientInfo');
   const ambientEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...', 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
   ambientInfo.textContent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
+  if (ambientInfo.textContent.includes('Door opening') || ambientInfo.textContent.includes('whoosh of the automatic doors')) {
+    doorOpen = true;
+    setTimeout(() => {
+      doorOpen = false;
+    }, 3000);
+  }
 }
 setInterval(updateStats, 30000);
 setInterval(updateAmbientInfo, 8000);
