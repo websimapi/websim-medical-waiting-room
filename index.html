@@ -591,13 +591,7 @@ function createReceptionDesk() {
 const receptionDesk = createReceptionDesk();
 const penAndClipboard = createPenAndClipboard();
 const deskSurfaceY = calculateDeskSurfaceY();
-penAndClipboard.position.set(-7, deskSurfaceY, -8);
-penAndClipboard.rotation.y = Math.PI / 6;
-scene.add(penAndClipboard);
-penAndClipboard.userData = {
-  type: 'penclipboard'
-};
-penAndClipboard.position.set(-7.5, 1.8, -8);
+penAndClipboard.position.set(1, 0.6, -5);
 penAndClipboard.rotation.y = Math.PI / 6;
 scene.add(penAndClipboard);
 receptionDesk.position.set(-8, 0.6, -8);
@@ -694,48 +688,6 @@ function createMagazine() {
   magazine.add(cover);
   return magazine;
 }
-function createSanitizer() {
-  const sanitizer = new THREE.Group();
-  const baseGeometry = new THREE.CylinderGeometry(0.08, 0.1, 0.25, 8);
-  const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0xc2e8ff,
-    transparent: true,
-    opacity: 0.7
-  });
-  const base = new THREE.Mesh(baseGeometry, baseMaterial);
-  const pumpGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.08, 8);
-  const pumpMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff
-  });
-  const pump = new THREE.Mesh(pumpGeometry, pumpMaterial);
-  pump.position.y = 0.15;
-  sanitizer.add(base);
-  sanitizer.add(pump);
-  return sanitizer;
-}
-function createWaterDispenser() {
-  const dispenser = new THREE.Group();
-  const tankGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1.2, 8);
-  const tankMaterial = new THREE.MeshStandardMaterial({
-    color: 0xc2e8ff,
-    transparent: true,
-    opacity: 0.6
-  });
-  const tank = new THREE.Mesh(tankGeometry, tankMaterial);
-  tank.position.y = 0.9;
-  const baseGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-  const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0xeeeeee
-  });
-  const base = new THREE.Mesh(baseGeometry, baseMaterial);
-  base.position.y = 0.3;
-  dispenser.add(tank);
-  dispenser.add(base);
-  return dispenser;
-}
-const coffeeTable = createCoffeeTable();
-coffeeTable.position.set(0, 0, -5);
-scene.add(coffeeTable);
 const magazineStack = new THREE.Group();
 for (let i = 0; i < 5; i++) {
   const magazine = createMagazine();
@@ -743,7 +695,7 @@ for (let i = 0; i < 5; i++) {
   magazine.rotation.y = Math.random() * Math.PI * 0.2;
   magazineStack.add(magazine);
 }
-magazineStack.position.set(0, 0.6, -5);
+magazineStack.position.set(-1, 0.6, -5);
 scene.add(magazineStack);
 const sanitizer = createSanitizer();
 sanitizer.position.set(-7, 1.2, -7.5);
@@ -929,7 +881,6 @@ function startExperience() {
   startButton.classList.add('hidden');
   document.querySelector('.stats').classList.remove('hidden');
   setInterval(updateStats, 30000);
-  setInterval(updateAmbientInfo, 8000);
   updateStats();
   updateAmbientInfo();
   animate();
@@ -1096,58 +1047,6 @@ function resetCamera(duration = 3000) {
     controls.update();
   }, duration);
 }
-function animate() {
-  if (!isExperienceStarted) return;
-  requestAnimationFrame(animate);
-  plant.rotation.y += 0.001;
-  controls.update();
-  const sanitizerPump = sanitizer.children[1];
-  sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
-  const door = scene.getObjectById(doorway.id);
-  if (door) {
-    door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
-  }
-  const windows = scene.children.filter(child => child.material && child.material.type === 'MeshPhysicalMaterial');
-  windows.forEach(window => {
-    window.material.envMapIntensity = 1.2 + Math.sin(Date.now() * 0.001) * 0.2;
-  });
-  const now = new Date();
-  const hours = now.getHours() % 12;
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
-  const milliseconds = now.getMilliseconds();
-  const hourAngle = (hours + minutes / 60) * Math.PI / 6 - Math.PI / 2;
-  const minuteAngle = (minutes + seconds / 60) * Math.PI / 30 - Math.PI / 2;
-  const secondAngle = -((seconds + milliseconds / 1000) * Math.PI / 30 - Math.PI / 2);
-  if (clock.hourHand) {
-    clock.hourHand.rotation.z = hourAngle;
-    clock.minuteHand.rotation.z = minuteAngle;
-    clock.secondHand.rotation.z = secondAngle;
-  }
-  const phone = scene.children.find(child => child.type === 'Group' && child.children.length === 4);
-  if (phone) {
-    phone.children[2].position.y = -0.05 + Math.sin(Date.now() * 0.001) * 0.002;
-  }
-  renderer.render(scene, camera);
-}
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-function updateStats() {
-  const patientCount = document.getElementById('patientCount');
-  const waitTime = document.getElementById('waitTime');
-  const nextPatient = document.getElementById('nextPatient');
-  const temperature = document.getElementById('temperature');
-  const patients = ['Johnson, Sarah', 'Smith, Michael', 'Williams, Emma', 'Brown, David', 'Miller, Lisa', 'Davis, John', 'Wilson, Emily'];
-  patientCount.textContent = Math.floor(Math.random() * 3) + 3;
-  waitTime.textContent = Math.floor(Math.random() * 20) + 15;
-  nextPatient.textContent = patients[Math.floor(Math.random() * patients.length)];
-  const temp = Math.floor(Math.random() * 3) + 71;
-  temperature.textContent = `${temp}°F`;
-  thermostat.updateTemp(temp);
-}
 function updateAmbientInfo() {
   const ambientInfo = document.getElementById('ambientInfo');
   const existingEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...'];
@@ -1158,61 +1057,61 @@ function updateAmbientInfo() {
     if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
       playMagazineSound();
       focusCamera(magazineStack.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('Children')) {
-      playChildrenSound();
+      playChildrenSound(); 
       focusCamera(new THREE.Vector3(9.95, 5, 0));
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('Water dispenser')) {
       playWaterSound();
       focusCamera(waterDispenser.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('Phone')) {
       playPhoneSound();
       focusCamera(phone.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('typing') || newEvent.includes('conversation')) {
       if (newEvent.includes('typing')) playRandomTypingSound();
       if (newEvent.includes('conversation')) playConversationSound();
       focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('cough')) {
       playRandomCoughSound();
       focusCamera(new THREE.Vector3(-3, 0, -8));
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('footsteps')) {
       playFootstepsSound();
       focusCamera(doorway.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('Pen')) {
       playRandomPenSound();
-      focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 5000);
+      focusCamera(penAndClipboard.position);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('beep')) {
       playBeepSound();
       focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('air conditioning')) {
       playHumSound();
       focusCamera(new THREE.Vector3(0, 9, 0));
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('Door opening') || newEvent.includes('whoosh')) {
       if (newEvent.includes('Door opening')) playDoorOpenSound();
       if (newEvent.includes('whoosh')) playDoorWhooshSound();
       focusCamera(doorway.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('sanitizer')) {
       playSanitizerSound();
       focusCamera(sanitizer.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('Clock')) {
       playClockTickSound();
       focusCamera(clock.position);
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     } else if (newEvent.includes('adjusting their mask')) {
       playMaskAdjustSound();
       focusCamera(new THREE.Vector3(-3, 0, -8));
-      setTimeout(resetCamera, 5000);
+      setTimeout(resetCamera, 7000);
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
@@ -1244,6 +1143,50 @@ if (existingPenClipboard) {
   const deskSurfaceY = calculateDeskSurfaceY();
   existingPenClipboard.position.y = deskSurfaceY;
 }
+function animate() {
+  if (!isExperienceStarted) return;
+  requestAnimationFrame(animate);
+  
+  plant.rotation.y += 0.001;
+  controls.update();
+  const sanitizerPump = sanitizer.children[1];
+  sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
+  const door = scene.getObjectById(doorway.id);
+  if (door) {
+    door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
+  }
+  const windows = scene.children.filter(child => child.material && child.material.type === 'MeshPhysicalMaterial');
+  windows.forEach(window => {
+    window.material.envMapIntensity = 1.2 + Math.sin(Date.now() * 0.001) * 0.2;
+  });
+  const now = new Date();
+  const hours = now.getHours() % 12;
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+  const milliseconds = now.getMilliseconds();
+  const hourAngle = (hours + minutes / 60) * Math.PI / 6 - Math.PI / 2;
+  const minuteAngle = (minutes + seconds / 60) * Math.PI / 30 - Math.PI / 2;
+  const secondAngle = -((seconds + milliseconds / 1000) * Math.PI / 30 - Math.PI / 2);
+  if (clock.hourHand) {
+    clock.hourHand.rotation.z = hourAngle;
+    clock.minuteHand.rotation.z = minuteAngle;
+    clock.secondHand.rotation.z = secondAngle;
+  }
+  const phone = scene.children.find(child => child.type === 'Group' && child.children.length === 4);
+  if (phone) {
+    phone.children[2].position.y = -0.05 + Math.sin(Date.now() * 0.001) * 0.002;
+  }
+  if (!animate.lastAmbientUpdate || Date.now() - animate.lastAmbientUpdate >= 2000) {
+    updateAmbientInfo();
+    animate.lastAmbientUpdate = Date.now();
+  }
+  renderer.render(scene, camera);
+}
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
 animate();</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
