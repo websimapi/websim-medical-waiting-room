@@ -810,7 +810,7 @@ function animate() {
   const milliseconds = now.getMilliseconds();
   const hourAngle = (hours + minutes / 60) * Math.PI / 6 - Math.PI / 2;
   const minuteAngle = (minutes + seconds / 60) * Math.PI / 30 - Math.PI / 2;
-  const secondAngle = (seconds + milliseconds / 1000) * Math.PI / 30 - Math.PI / 2;
+  const secondAngle = -((seconds + milliseconds / 1000) * Math.PI / 30 - Math.PI / 2);
   if (clock.hourHand) {
     clock.hourHand.rotation.z = hourAngle;
     clock.minuteHand.rotation.z = minuteAngle;
