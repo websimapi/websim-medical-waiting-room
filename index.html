@@ -301,6 +301,9 @@ function createCeilingAndDucts() {
 }
 function createPenAndClipboard() {
   const group = new THREE.Group();
+  group.userData = {
+    type: 'penclipboard'
+  };
   const boardGeometry = new THREE.BoxGeometry(0.3, 0.02, 0.4);
   const boardMaterial = new THREE.MeshStandardMaterial({
     color: 0x8B4513,
@@ -579,11 +582,22 @@ function createReceptionDesk() {
   deskGroup.add(desk);
   deskGroup.add(computer);
   deskGroup.add(monitor);
+  deskGroup.userData = {
+    type: 'desk',
+    height: 1.2
+  };
   return deskGroup;
 }
 const receptionDesk = createReceptionDesk();
 const penAndClipboard = createPenAndClipboard();
-penAndClipboard.position.set(-8, 1.8, -8.5);
+const deskSurfaceY = calculateDeskSurfaceY();
+penAndClipboard.position.set(-7, deskSurfaceY, -8);
+penAndClipboard.rotation.y = Math.PI / 6;
+scene.add(penAndClipboard);
+penAndClipboard.userData = {
+  type: 'penclipboard'
+};
+penAndClipboard.position.set(-7.5, 1.8, -8);
 penAndClipboard.rotation.y = Math.PI / 6;
 scene.add(penAndClipboard);
 receptionDesk.position.set(-8, 0.6, -8);
@@ -1144,69 +1158,92 @@ function updateAmbientInfo() {
     if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
       playMagazineSound();
       focusCamera(magazineStack.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Children')) {
       playChildrenSound();
       focusCamera(new THREE.Vector3(9.95, 5, 0));
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Water dispenser')) {
       playWaterSound();
       focusCamera(waterDispenser.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Phone')) {
       playPhoneSound();
       focusCamera(phone.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('typing') || newEvent.includes('conversation')) {
       if (newEvent.includes('typing')) playRandomTypingSound();
       if (newEvent.includes('conversation')) playConversationSound();
       focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('cough')) {
       playRandomCoughSound();
       focusCamera(new THREE.Vector3(-3, 0, -8));
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('footsteps')) {
       playFootstepsSound();
       focusCamera(doorway.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Pen')) {
       playRandomPenSound();
-      focusCamera(penAndClipboard.position);
-      setTimeout(resetCamera, 6000);
+      focusCamera(receptionDesk.position);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('beep')) {
       playBeepSound();
       focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('air conditioning')) {
       playHumSound();
       focusCamera(new THREE.Vector3(0, 9, 0));
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Door opening') || newEvent.includes('whoosh')) {
       if (newEvent.includes('Door opening')) playDoorOpenSound();
       if (newEvent.includes('whoosh')) playDoorWhooshSound();
       focusCamera(doorway.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('sanitizer')) {
       playSanitizerSound();
       focusCamera(sanitizer.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Clock')) {
       playClockTickSound();
       focusCamera(clock.position);
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('adjusting their mask')) {
       playMaskAdjustSound();
       focusCamera(new THREE.Vector3(-3, 0, -8));
-      setTimeout(resetCamera, 6000);
+      setTimeout(resetCamera, 5000);
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
   }
 }
-setInterval(updateAmbientInfo, 10000);
 const ceilingAndDucts = createCeilingAndDucts();
 scene.add(ceilingAndDucts);
+THREE.Object3D.prototype.getObjectByUserData = function (key, value) {
+  if (this.userData[key] === value) return this;
+  for (const child of this.children) {
+    const result = child.getObjectByUserData(key, value);
+    if (result) return result;
+  }
+  return null;
+};
+function calculateDeskSurfaceY() {
+  const raycaster = new THREE.Raycaster();
+  const deskCenter = receptionDesk.position.clone();
+  deskCenter.y += 1.2;
+  raycaster.set(deskCenter, new THREE.Vector3(0, -1, 0));
+  const intersects = raycaster.intersectObject(receptionDesk, true);
+  if (intersects.length > 0) {
+    return intersects[0].point.y;
+  }
+  return receptionDesk.position.y + 1.2;
+}
+const existingPenClipboard = scene.getObjectByUserData('type', 'penclipboard');
+if (existingPenClipboard) {
+  const deskSurfaceY = calculateDeskSurfaceY();
+  existingPenClipboard.position.y = deskSurfaceY;
+}
 animate();</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
