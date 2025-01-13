@@ -633,6 +633,21 @@ function playFootstepsSound() {
   footstepsSound.currentTime = 0;
   footstepsSound.play().catch(e => console.warn('Error playing footsteps sound:', e));
 }
+const penSounds = [new Audio('/Pen_Scratching_on_cl.mp3'), new Audio('/Pen_Scratching_on_cl (1).mp3'), new Audio('/Pen_Scratching_on_cl (2).mp3')];
+penSounds.forEach((sound, i) => {
+  sound.onerror = () => {
+    console.warn(`Failed to load pen sound ${i + 1}`);
+  };
+});
+function playRandomPenSound() {
+  if (penSounds.some(s => s.error)) {
+    console.warn('Some pen sounds not available');
+    return;
+  }
+  const randomSound = penSounds[Math.floor(Math.random() * penSounds.length)];
+  randomSound.currentTime = 0;
+  randomSound.play().catch(e => console.warn('Error playing pen sound:', e));
+}
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -686,6 +701,8 @@ function updateAmbientInfo() {
       playRandomCoughSound();
     } else if (newEvent.includes('footsteps')) {
       playFootstepsSound();
+    } else if (newEvent.includes('Pen')) {
+      playRandomPenSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
