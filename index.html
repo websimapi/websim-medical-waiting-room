@@ -702,13 +702,13 @@ function playHumSound() {
   clearInterval(humFadeInterval);
   humFadeInterval = setInterval(() => {
     if (humSound.volume < 0.3) {
-      humSound.volume += 0.01;
+      humSound.volume = Math.min(0.3, humSound.volume + 0.01);
     } else {
       clearInterval(humFadeInterval);
       setTimeout(() => {
         humFadeInterval = setInterval(() => {
           if (humSound.volume > 0) {
-            humSound.volume -= 0.01;
+            humSound.volume = Math.max(0, humSound.volume - 0.01);
           } else {
             clearInterval(humFadeInterval);
             humSound.pause();
