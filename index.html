@@ -68,6 +68,46 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 2, 0);
 controls.update();
 
+// Initialize touch controls variables
+let touchStartX = 0;
+let touchStartY = 0;
+let isTouching = false;
+
+// Modify OrbitControls settings for better mobile experience
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.screenSpacePanning = false;
+controls.maxPolarAngle = Math.PI / 2;
+controls.minDistance = 5;
+controls.maxDistance = 15;
+
+// Add touch controls
+renderer.domElement.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  isTouching = true;
+}, false);
+
+renderer.domElement.addEventListener('touchmove', (e) => {
+  if (!isTouching) return;
+
+  const touchX = e.touches[0].clientX;
+  const touchY = e.touches[0].clientY;
+
+  const deltaX = (touchX - touchStartX) * 0.01;
+  const deltaY = (touchY - touchStartY) * 0.01;
+
+  camera.position.x += deltaX;
+  camera.position.y = Math.max(2, Math.min(8, camera.position.y - deltaY));
+
+  touchStartX = touchX;
+  touchStartY = touchY;
+}, false);
+
+renderer.domElement.addEventListener('touchend', () => {
+  isTouching = false;
+}, false);
+
 // Enhanced lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
@@ -151,13 +191,13 @@ function createChair() {
     metalness: 0.3
   });
   const seat = new THREE.Mesh(seatGeometry, seatMaterial);
-  seat.position.y = 0.5;
+  seat.position.y = 0.55; 
   seat.castShadow = true;
   
   // More detailed back
   const backGeometry = new THREE.BoxGeometry(1, 1.2, 0.1);
   const back = new THREE.Mesh(backGeometry, seatMaterial);
-  back.position.y = 1.1;
+  back.position.y = 1.15; 
   back.position.z = -0.45;
   back.castShadow = true;
   
@@ -166,10 +206,10 @@ function createChair() {
   const legMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
   
   const positions = [
-    [-0.4, -0.2, 0.4],
-    [0.4, -0.2, 0.4],
-    [-0.4, -0.2, -0.4],
-    [0.4, -0.2, -0.4]
+    [-0.4, 0.25, 0.4], 
+    [0.4, 0.25, 0.4],
+    [-0.4, 0.25, -0.4],
+    [0.4, 0.25, -0.4]
   ];
   
   positions.forEach(pos => {
@@ -294,6 +334,9 @@ function animate() {
   
   // Subtle ambient movement
   plant.rotation.y += 0.001;
+  
+  // Update controls
+  controls.update();
   
   renderer.render(scene, camera);
 }
