@@ -190,25 +190,28 @@ function createCoffeeTable() {
 }
 function createPhoneSystem() {
   const phoneGroup = new THREE.Group();
-  const baseGeometry = new THREE.BoxGeometry(0.3, 0.4, 0.15);
+
+  const baseGeometry = new THREE.BoxGeometry(0.25, 0.35, 0.12);
   const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0x2f2f2f,
+    color: 0xffffff,
     roughness: 0.7,
-    metalness: 0.3
+    metalness: 0.2
   });
   const base = new THREE.Mesh(baseGeometry, baseMaterial);
-  const screenGeometry = new THREE.PlaneGeometry(0.25, 0.15);
+
+  const screenGeometry = new THREE.PlaneGeometry(0.2, 0.12);
   const screenCanvas = document.createElement('canvas');
   screenCanvas.width = 256;
   screenCanvas.height = 128;
   const context = screenCanvas.getContext('2d');
-  context.fillStyle = '#001100';
+  context.fillStyle = '#000000';
   context.fillRect(0, 0, 256, 128);
   context.fillStyle = '#00ff00';
-  context.font = '24px monospace';
+  context.font = '20px monospace';
   context.textAlign = 'center';
   context.fillText('LINE 1 ACTIVE', 128, 40);
   context.fillText('12:00 PM', 128, 80);
+
   const screenTexture = new THREE.CanvasTexture(screenCanvas);
   const screenMaterial = new THREE.MeshBasicMaterial({
     map: screenTexture,
@@ -216,15 +219,16 @@ function createPhoneSystem() {
     emissiveIntensity: 0.2
   });
   const screen = new THREE.Mesh(screenGeometry, screenMaterial);
-  screen.position.z = 0.076;
-  screen.position.y = 0.1;
-  const handsetGroup = new THREE.Group();
-  const handsetGeometry = new THREE.BoxGeometry(0.1, 0.25, 0.05);
+  screen.position.z = 0.061;
+  screen.position.y = 0.08;
+
+  const handsetGeometry = new THREE.BoxGeometry(0.08, 0.22, 0.04);
   const handsetMaterial = new THREE.MeshStandardMaterial({
-    color: 0x2f2f2f,
+    color: 0xffffff,
     roughness: 0.8
   });
   const handset = new THREE.Mesh(handsetGeometry, handsetMaterial);
+
   const speakerGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.04, 8);
   const speakerMaterial = new THREE.MeshStandardMaterial({
     color: 0x1a1a1a
@@ -235,31 +239,82 @@ function createPhoneSystem() {
   const mouthpiece = new THREE.Mesh(speakerGeometry, speakerMaterial);
   mouthpiece.rotation.x = Math.PI / 2;
   mouthpiece.position.set(0, -0.1, 0.025);
+  const handsetGroup = new THREE.Group();
   handsetGroup.add(handset);
   handsetGroup.add(earpiece);
   handsetGroup.add(mouthpiece);
   handsetGroup.position.set(0.15, -0.05, 0.1);
   handsetGroup.rotation.z = -Math.PI / 12;
-  phoneGroup.add(base);
-  phoneGroup.add(screen);
-  phoneGroup.add(handsetGroup);
+
   const buttonPad = new THREE.Group();
   const buttons = [];
-  const buttonGeometry = new THREE.BoxGeometry(0.04, 0.04, 0.01);
+  const buttonGeometry = new THREE.BoxGeometry(0.03, 0.03, 0.01);
   const buttonMaterial = new THREE.MeshStandardMaterial({
-    color: 0x404040,
+    color: 0xeeeeee,
     roughness: 0.5
   });
+
   for (let i = 0; i < 12; i++) {
     const button = new THREE.Mesh(buttonGeometry, buttonMaterial);
     const row = Math.floor(i / 3);
     const col = i % 3;
-    button.position.set((col - 1) * 0.06, -0.1 - row * 0.06, 0.076);
+    button.position.set((col - 1) * 0.05, -0.08 - row * 0.05, 0.061);
     buttons.push(button);
     buttonPad.add(button);
   }
+
+  phoneGroup.add(base);
+  phoneGroup.add(screen);
+  phoneGroup.add(handsetGroup);
   phoneGroup.add(buttonPad);
+
   return phoneGroup;
+}
+function createCeilingAndDucts() {
+  const ceilingGroup = new THREE.Group();
+
+  const ceilingGeometry = new THREE.PlaneGeometry(20, 20);
+  const ceilingMaterial = new THREE.MeshStandardMaterial({
+    color: 0xf0f0f0,
+    roughness: 0.9,
+    metalness: 0.1
+  });
+  const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+  ceiling.rotation.x = Math.PI / 2;
+  ceiling.position.y = 10;
+  ceilingGroup.add(ceiling);
+
+  const mainDuctGeometry = new THREE.BoxGeometry(2, 0.6, 20);
+  const ductMaterial = new THREE.MeshStandardMaterial({
+    color: 0xd3d3d3,
+    roughness: 0.6,
+    metalness: 0.4
+  });
+  const mainDuct = new THREE.Mesh(mainDuctGeometry, ductMaterial);
+  mainDuct.position.set(0, 9.7, 0);
+  ceilingGroup.add(mainDuct);
+
+  const branchPositions = [-6, -2, 2, 6];
+  branchPositions.forEach(x => {
+    const branchDuct = new THREE.Mesh(
+      new THREE.BoxGeometry(4, 0.4, 0.4),
+      ductMaterial
+    );
+    branchDuct.position.set(x, 9.5, 0);
+    ceilingGroup.add(branchDuct);
+
+    const ventGeometry = new THREE.CircleGeometry(0.3, 8);
+    const ventMaterial = new THREE.MeshStandardMaterial({
+      color: 0xcccccc,
+      roughness: 0.8
+    });
+    const vent = new THREE.Mesh(ventGeometry, ventMaterial);
+    vent.rotation.x = Math.PI / 2;
+    vent.position.set(x, 9.3, 0);
+    ceilingGroup.add(vent);
+  });
+
+  return ceilingGroup;
 }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6e9ed);
@@ -517,7 +572,7 @@ const receptionDesk = createReceptionDesk();
 receptionDesk.position.set(-8, 0.6, -8);
 scene.add(receptionDesk);
 const phone = createPhoneSystem();
-phone.position.set(-7, 4.5, -9.85);
+phone.position.set(-7, 3.5, -9.85);
 scene.add(phone);
 function createPlant() {
   const plantGroup = new THREE.Group();
@@ -942,6 +997,7 @@ function playMaskAdjustSound() {
 }
 function createThermostat() {
   const thermostatGroup = new THREE.Group();
+
   const casingGeometry = new THREE.BoxGeometry(0.4, 0.6, 0.1);
   const casingMaterial = new THREE.MeshStandardMaterial({
     color: 0xeeeeee,
@@ -949,6 +1005,7 @@ function createThermostat() {
     metalness: 0.2
   });
   const casing = new THREE.Mesh(casingGeometry, casingMaterial);
+
   const screenGeometry = new THREE.PlaneGeometry(0.3, 0.4);
   const screenCanvas = document.createElement('canvas');
   screenCanvas.width = 256;
@@ -1131,6 +1188,10 @@ function updateAmbientInfo() {
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
   }
-}</script>
+}
+const ceilingAndDucts = createCeilingAndDucts();
+scene.add(ceilingAndDucts);
+animate();
+</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
