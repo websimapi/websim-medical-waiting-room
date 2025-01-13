@@ -771,6 +771,7 @@ function startExperience() {
   updateStats();
   updateAmbientInfo();
   animate();
+  controls.enabled = true;
 }
 startButton.addEventListener('click', startExperience);
 document.querySelector('.stats').classList.add('hidden');
@@ -904,6 +905,35 @@ function createThermostat() {
 const thermostat = createThermostat();
 thermostat.position.set(-5, 5, -9.85);
 scene.add(thermostat);
+function focusCamera(targetPosition, duration = 1000) {
+  const startPosition = camera.position.clone();
+  const startRotation = controls.target.clone();
+  const endPosition = targetPosition.clone().add(new THREE.Vector3(0, 2, 5));
+  const endRotation = targetPosition.clone();
+  const start = Date.now();
+  function animate() {
+    const now = Date.now();
+    const progress = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.cos(progress * Math.PI / 2);
+    camera.position.lerpVectors(startPosition, endPosition, eased);
+    controls.target.lerpVectors(startRotation, endRotation, eased);
+    controls.update();
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+  animate();
+}
+function resetCamera(duration = 1000) {
+  const defaultPosition = new THREE.Vector3(0, 5, 10);
+  const defaultTarget = new THREE.Vector3(0, 2, 0);
+  focusCamera(defaultTarget, duration);
+  setTimeout(() => {
+    camera.position.copy(defaultPosition);
+    controls.target.copy(defaultTarget);
+    controls.update();
+  }, duration);
+}
 function animate() {
   if (!isExperienceStarted) return;
   requestAnimationFrame(animate);
@@ -961,36 +991,59 @@ function updateAmbientInfo() {
   try {
     if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
       playMagazineSound();
+      focusCamera(magazineStack.position);
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('Children')) {
       playChildrenSound();
+      focusCamera(new THREE.Vector3(9.95, 5, 0));
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('Water dispenser')) {
       playWaterSound();
-    } else if (newEvent.includes('Phone')) {
-      playPhoneSound();
-    } else if (newEvent.includes('conversation')) {
-      playConversationSound();
+      focusCamera(waterDispenser.position);
+      setTimeout(resetCamera, 3000);
+    } else if (newEvent.includes('Phone') || newEvent.includes('typing') || newEvent.includes('conversation')) {
+      if (newEvent.includes('Phone')) playPhoneSound();
+      if (newEvent.includes('typing')) playRandomTypingSound();
+      if (newEvent.includes('conversation')) playConversationSound();
+      focusCamera(receptionDesk.position);
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('cough')) {
       playRandomCoughSound();
+      focusCamera(new THREE.Vector3(-3, 0, -8));
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('footsteps')) {
       playFootstepsSound();
+      focusCamera(doorway.position);
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('Pen')) {
       playRandomPenSound();
+      focusCamera(receptionDesk.position);
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('beep')) {
       playBeepSound();
+      focusCamera(receptionDesk.position);
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('air conditioning')) {
       playHumSound();
-    } else if (newEvent.includes('Door opening')) {
-      playDoorOpenSound();
+      focusCamera(new THREE.Vector3(0, 9, 0));
+      setTimeout(resetCamera, 3000);
+    } else if (newEvent.includes('Door opening') || newEvent.includes('whoosh')) {
+      if (newEvent.includes('Door opening')) playDoorOpenSound();
+      if (newEvent.includes('whoosh')) playDoorWhooshSound();
+      focusCamera(doorway.position);
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('sanitizer')) {
       playSanitizerSound();
-    } else if (newEvent.includes('whoosh')) {
-      playDoorWhooshSound();
+      focusCamera(sanitizer.position);
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('Clock')) {
       playClockTickSound();
-    } else if (newEvent.includes('typing')) {
-      playRandomTypingSound();
+      focusCamera(clock.position);
+      setTimeout(resetCamera, 3000);
     } else if (newEvent.includes('adjusting their mask')) {
       playMaskAdjustSound();
+      focusCamera(new THREE.Vector3(-3, 0, -8));
+      setTimeout(resetCamera, 3000);
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
