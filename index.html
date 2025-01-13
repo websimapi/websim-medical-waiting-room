@@ -332,6 +332,58 @@ function createPenAndClipboard() {
   group.add(pen);
   return group;
 }
+function createSanitizer() {
+  const sanitizerGroup = new THREE.Group();
+
+  // Create base
+  const baseGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.3);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: 0xdddddd,
+    roughness: 0.7,
+    metalness: 0.3
+  });
+  const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  sanitizerGroup.add(base);
+
+  // Create pump/dispenser
+  const pumpGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.2, 8);
+  const pumpMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.5,
+    metalness: 0.5
+  });
+  const pump = new THREE.Mesh(pumpGeometry, pumpMaterial);
+  pump.position.y = 0.2;
+  pump.position.z = 0.05;
+  sanitizerGroup.add(pump);
+
+  // Create container
+  const containerGeometry = new THREE.BoxGeometry(0.35, 0.3, 0.25);
+  const containerMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.6,
+    roughness: 0.2,
+    transmission: 0.5,
+    thickness: 0.5
+  });
+  const container = new THREE.Mesh(containerGeometry, containerMaterial);
+  container.position.y = 0.15;
+  sanitizerGroup.add(container);
+
+  // Create liquid level indicator
+  const liquidGeometry = new THREE.BoxGeometry(0.33, 0.2, 0.23);
+  const liquidMaterial = new THREE.MeshStandardMaterial({
+    color: 0x90EE90,
+    transparent: true,
+    opacity: 0.7
+  });
+  const liquid = new THREE.Mesh(liquidGeometry, liquidMaterial);
+  liquid.position.y = 0.1;
+  sanitizerGroup.add(liquid);
+
+  return sanitizerGroup;
+}
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6e9ed);
 const warningSign = createWarningSign();
