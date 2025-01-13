@@ -53,44 +53,59 @@ canvas {
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// Scene setup
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f4f8);
 
-// Camera setup
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 5, 10);
 
-// Renderer setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 2, 0);
 controls.update();
 
-// Lighting
+// Enhanced lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight.position.set(5, 5, 5);
 directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 2048;
+directionalLight.shadow.mapSize.height = 2048;
 scene.add(directionalLight);
 
-// Floor
-const floorGeometry = new THREE.PlaneGeometry(20, 20);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xe6e6fa });
+// Add point lights for more realistic lighting
+const pointLight1 = new THREE.PointLight(0xffffff, 0.5);
+pointLight1.position.set(0, 8, 0);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0xffffff, 0.3);
+pointLight2.position.set(-5, 8, -5);
+scene.add(pointLight2);
+
+// Enhanced floor with texture
+const floorGeometry = new THREE.PlaneGeometry(20, 20, 50, 50);
+const floorMaterial = new THREE.MeshStandardMaterial({ 
+  color: 0xe6e6fa,
+  roughness: 0.8,
+  metalness: 0.2
+});
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
 
-// Walls
-const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+// Enhanced walls with baseboards
+const wallMaterial = new THREE.MeshStandardMaterial({ 
+  color: 0xffffff,
+  roughness: 0.9,
+  metalness: 0.1
+});
 
 const backWall = new THREE.Mesh(
   new THREE.PlaneGeometry(20, 10),
@@ -109,19 +124,60 @@ leftWall.position.y = 5;
 leftWall.rotation.y = Math.PI / 2;
 scene.add(leftWall);
 
-// Chairs
+// Add baseboards
+function createBaseboard(length, isHorizontal) {
+  const baseboardGeometry = new THREE.BoxGeometry(isHorizontal ? length : 0.2, 0.3, isHorizontal ? 0.2 : length);
+  const baseboardMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+  return new THREE.Mesh(baseboardGeometry, baseboardMaterial);
+}
+
+const backBaseboard = createBaseboard(20, true);
+backBaseboard.position.set(0, 0.15, -9.9);
+scene.add(backBaseboard);
+
+const leftBaseboard = createBaseboard(20, false);
+leftBaseboard.position.set(-9.9, 0.15, 0);
+scene.add(leftBaseboard);
+
+// Enhanced chair creation
 function createChair() {
   const chairGroup = new THREE.Group();
   
+  // More detailed seat
   const seatGeometry = new THREE.BoxGeometry(1, 0.1, 1);
-  const seatMaterial = new THREE.MeshStandardMaterial({ color: 0x4169e1 });
+  const seatMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x4169e1,
+    roughness: 0.7,
+    metalness: 0.3
+  });
   const seat = new THREE.Mesh(seatGeometry, seatMaterial);
   seat.position.y = 0.5;
+  seat.castShadow = true;
   
+  // More detailed back
   const backGeometry = new THREE.BoxGeometry(1, 1.2, 0.1);
   const back = new THREE.Mesh(backGeometry, seatMaterial);
   back.position.y = 1.1;
   back.position.z = -0.45;
+  back.castShadow = true;
+  
+  // Add chair legs
+  const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.5);
+  const legMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+  
+  const positions = [
+    [-0.4, -0.2, 0.4],
+    [0.4, -0.2, 0.4],
+    [-0.4, -0.2, -0.4],
+    [0.4, -0.2, -0.4]
+  ];
+  
+  positions.forEach(pos => {
+    const leg = new THREE.Mesh(legGeometry, legMaterial);
+    leg.position.set(...pos);
+    leg.castShadow = true;
+    chairGroup.add(leg);
+  });
   
   chairGroup.add(seat);
   chairGroup.add(back);
@@ -138,28 +194,70 @@ for(let i = 0; i < 4; i++) {
   chairs.push(chair);
 }
 
-// Reception desk
-const deskGeometry = new THREE.BoxGeometry(4, 1.2, 1);
-const deskMaterial = new THREE.MeshStandardMaterial({ color: 0xa0522d });
-const desk = new THREE.Mesh(deskGeometry, deskMaterial);
-desk.position.set(-8, 0.6, -8);
-scene.add(desk);
+// Enhanced reception desk
+function createReceptionDesk() {
+  const deskGroup = new THREE.Group();
+  
+  // Main desk body
+  const deskGeometry = new THREE.BoxGeometry(4, 1.2, 1);
+  const deskMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0xa0522d,
+    roughness: 0.6,
+    metalness: 0.2
+  });
+  const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+  desk.castShadow = true;
+  
+  // Add desktop items
+  const computerGeometry = new THREE.BoxGeometry(0.8, 0.5, 0.5);
+  const computerMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+  const computer = new THREE.Mesh(computerGeometry, computerMaterial);
+  computer.position.set(-1, 0.85, 0);
+  
+  // Add monitor
+  const monitorGeometry = new THREE.BoxGeometry(0.8, 0.6, 0.1);
+  const monitor = new THREE.Mesh(monitorGeometry, computerMaterial);
+  monitor.position.set(-1, 1.5, 0);
+  
+  deskGroup.add(desk);
+  deskGroup.add(computer);
+  deskGroup.add(monitor);
+  
+  return deskGroup;
+}
 
-// Plant
+const receptionDesk = createReceptionDesk();
+receptionDesk.position.set(-8, 0.6, -8);
+scene.add(receptionDesk);
+
+// Enhanced plant
 function createPlant() {
   const plantGroup = new THREE.Group();
   
-  const potGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.6);
-  const potMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+  const potGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.6, 16);
+  const potMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x8b4513,
+    roughness: 0.8
+  });
   const pot = new THREE.Mesh(potGeometry, potMaterial);
+  pot.castShadow = true;
   
-  const leavesGeometry = new THREE.SphereGeometry(0.6, 8, 8);
-  const leavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
-  const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
-  leaves.position.y = 0.6;
+  // Create multiple leaf clusters for more detail
+  for(let i = 0; i < 5; i++) {
+    const leavesGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+    const leavesMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x228b22,
+      roughness: 1.0
+    });
+    const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+    leaves.position.y = 0.6 + Math.random() * 0.3;
+    leaves.position.x = (Math.random() - 0.5) * 0.3;
+    leaves.position.z = (Math.random() - 0.5) * 0.3;
+    leaves.castShadow = true;
+    plantGroup.add(leaves);
+  }
   
   plantGroup.add(pot);
-  plantGroup.add(leaves);
   
   return plantGroup;
 }
@@ -168,9 +266,35 @@ const plant = createPlant();
 plant.position.set(8, 0, -8);
 scene.add(plant);
 
+// Add wall clock
+function createClock() {
+  const clockGroup = new THREE.Group();
+  
+  const faceGeometry = new THREE.CircleGeometry(0.5, 32);
+  const faceMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+  const face = new THREE.Mesh(faceGeometry, faceMaterial);
+  
+  const frameGeometry = new THREE.RingGeometry(0.5, 0.55, 32);
+  const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+  const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+  
+  clockGroup.add(face);
+  clockGroup.add(frame);
+  
+  return clockGroup;
+}
+
+const clock = createClock();
+clock.position.set(0, 7, -9.9);
+scene.add(clock);
+
 // Animation
 function animate() {
   requestAnimationFrame(animate);
+  
+  // Subtle ambient movement
+  plant.rotation.y += 0.001;
+  
   renderer.render(scene, camera);
 }
 
