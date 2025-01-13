@@ -504,7 +504,7 @@ function createMagazine() {
 }
 function createSanitizer() {
   const sanitizer = new THREE.Group();
-  const baseGeometry = new THREE.CylinderGeometry(0.08, 0.1, 0.12, 8); 
+  const baseGeometry = new THREE.CylinderGeometry(0.08, 0.1, 0.10, 8); 
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: 0xc2e8ff,
     transparent: true,
@@ -516,7 +516,7 @@ function createSanitizer() {
     color: 0xffffff
   });
   const pump = new THREE.Mesh(pumpGeometry, pumpMaterial);
-  pump.position.y = 0.08; 
+  pump.position.y = 0.07; 
   sanitizer.add(base);
   sanitizer.add(pump);
   return sanitizer;
@@ -555,7 +555,7 @@ for (let i = 0; i < 5; i++) {
 magazineStack.position.set(0, 0.6, -5); 
 scene.add(magazineStack);
 const sanitizer = createSanitizer();
-sanitizer.position.set(-7.7, 1.2, -7.8); 
+sanitizer.position.set(-7.7, 1.4, -7.8); 
 scene.add(sanitizer);
 const waterDispenser = createWaterDispenser();
 waterDispenser.position.set(9, 0, -8);
