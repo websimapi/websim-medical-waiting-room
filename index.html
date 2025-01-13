@@ -565,14 +565,6 @@ function animate() {
   sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
   magazineStack.children.forEach(magazine => {
     const cover = magazine.children[0];
-    const now = Date.now();
-    if (Math.random() < 0.001 && now - cover.userData.lastInteraction > 5000) {
-      if (magazinePageAudio) {
-        magazinePageAudio.currentTime = 0;
-        magazinePageAudio.play();
-      }
-      cover.userData.lastInteraction = now;
-    }
   });
   const door = scene.getObjectById(doorway.id);
   if (door) {
@@ -602,8 +594,7 @@ function updateStats() {
 }
 function updateAmbientInfo() {
   const ambientInfo = document.getElementById('ambientInfo');
-  const existingEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...'];
-  const ambientEvents = [...existingEvents, 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Someone flipping through a magazine...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
+  const ambientEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...', 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
   ambientInfo.textContent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
 }
 setInterval(updateStats, 30000);
