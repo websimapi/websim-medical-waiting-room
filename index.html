@@ -110,6 +110,59 @@ function createWarningSign() {
   return signGroup;
 }
 
+// Add function to create glass wall
+function createGlassWall(width, height) {
+  const glass = new THREE.Mesh(
+    new THREE.PlaneGeometry(width, height),
+    new THREE.MeshPhysicalMaterial({ 
+      transparent: true,
+      opacity: 0.3,
+      roughness: 0.1,
+      transmission: 0.9,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1
+    })
+  );
+  return glass;
+}
+
+// Add function to create glass door
+function createGlassDoor() {
+  const doorGroup = new THREE.Group();
+  
+  // Door glass
+  const glass = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 4),
+    new THREE.MeshPhysicalMaterial({
+      transparent: true, 
+      opacity: 0.3,
+      roughness: 0.1,
+      transmission: 0.9,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1
+    })
+  );
+  
+  // Door frame
+  const frameGeometry = new THREE.BoxGeometry(2.2, 4.2, 0.1);
+  const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+  const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+  frame.position.z = -0.05;
+  
+  // Door handle
+  const handleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4);
+  const handleMaterial = new THREE.MeshStandardMaterial({ color: 0xc0c0c0 });
+  const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+  handle.rotation.x = Math.PI / 2;
+  handle.position.set(0.8, 0, 0.1);
+  
+  doorGroup.add(glass);
+  doorGroup.add(frame);
+  doorGroup.add(handle);
+  
+  return doorGroup;
+}
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f4f8);
 
@@ -203,7 +256,7 @@ floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
 
-// Enhanced walls with baseboards
+// Add right wall with glass windows
 const wallMaterial = new THREE.MeshStandardMaterial({ 
   color: 0xffffff,
   roughness: 0.9,
@@ -226,6 +279,42 @@ leftWall.position.x = -10;
 leftWall.position.y = 5;
 leftWall.rotation.y = Math.PI / 2;
 scene.add(leftWall);
+
+const rightWall = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 10),
+  wallMaterial
+);
+rightWall.position.x = 10;
+rightWall.position.y = 5;
+rightWall.rotation.y = -Math.PI / 2;
+scene.add(rightWall);
+
+// Add windows to right wall
+for(let i = 0; i < 3; i++) {
+  const window = createGlassWall(4, 4);
+  window.position.set(9.9, 5, -7 + (i * 5));
+  window.rotation.y = -Math.PI / 2;
+  scene.add(window);
+}
+
+// Add front glass wall
+const glassWall = createGlassWall(20, 10);
+glassWall.position.set(0, 5, 10);
+glassWall.rotation.y = Math.PI;
+scene.add(glassWall);
+
+// Add entrance doorway
+const doorway = createGlassDoor();
+doorway.position.set(4, 2, 9.9);
+doorway.rotation.y = Math.PI;
+scene.add(doorway);
+
+// Add pillar next to door
+const pillarGeometry = new THREE.BoxGeometry(0.4, 10, 0.4);  
+const pillarMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
+pillar.position.set(5.2, 5, 9.8);
+scene.add(pillar);
 
 // Add baseboards
 function createBaseboard(length, isHorizontal) {
@@ -497,6 +586,12 @@ function animate() {
   // Animation for sanitizer pump
   const sanitizerPump = sanitizer.children[1];
   sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
+  
+  // Add subtle door swing animation
+  const door = scene.getObjectById(doorway.id);
+  if(door) {
+    door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
+  }
   
   renderer.render(scene, camera);
 }
