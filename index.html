@@ -188,6 +188,79 @@ function createCoffeeTable() {
   table.add(glassTop);
   return table;
 }
+function createPhoneSystem() {
+  const phoneGroup = new THREE.Group();
+  const baseGeometry = new THREE.BoxGeometry(0.3, 0.4, 0.15);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2f2f2f,
+    roughness: 0.7,
+    metalness: 0.3
+  });
+  const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  const screenGeometry = new THREE.PlaneGeometry(0.25, 0.15);
+  const screenCanvas = document.createElement('canvas');
+  screenCanvas.width = 256;
+  screenCanvas.height = 128;
+  const context = screenCanvas.getContext('2d');
+  context.fillStyle = '#001100';
+  context.fillRect(0, 0, 256, 128);
+  context.fillStyle = '#00ff00';
+  context.font = '24px monospace';
+  context.textAlign = 'center';
+  context.fillText('LINE 1 ACTIVE', 128, 40);
+  context.fillText('12:00 PM', 128, 80);
+  const screenTexture = new THREE.CanvasTexture(screenCanvas);
+  const screenMaterial = new THREE.MeshBasicMaterial({
+    map: screenTexture,
+    emissive: 0x00ff00,
+    emissiveIntensity: 0.2
+  });
+  const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+  screen.position.z = 0.076;
+  screen.position.y = 0.1;
+  const handsetGroup = new THREE.Group();
+  const handsetGeometry = new THREE.BoxGeometry(0.1, 0.25, 0.05);
+  const handsetMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2f2f2f,
+    roughness: 0.8
+  });
+  const handset = new THREE.Mesh(handsetGeometry, handsetMaterial);
+  const speakerGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.04, 8);
+  const speakerMaterial = new THREE.MeshStandardMaterial({
+    color: 0x1a1a1a
+  });
+  const earpiece = new THREE.Mesh(speakerGeometry, speakerMaterial);
+  earpiece.rotation.x = Math.PI / 2;
+  earpiece.position.set(0, 0.1, 0.025);
+  const mouthpiece = new THREE.Mesh(speakerGeometry, speakerMaterial);
+  mouthpiece.rotation.x = Math.PI / 2;
+  mouthpiece.position.set(0, -0.1, 0.025);
+  handsetGroup.add(handset);
+  handsetGroup.add(earpiece);
+  handsetGroup.add(mouthpiece);
+  handsetGroup.position.set(0.15, -0.05, 0.1);
+  handsetGroup.rotation.z = -Math.PI / 12;
+  phoneGroup.add(base);
+  phoneGroup.add(screen);
+  phoneGroup.add(handsetGroup);
+  const buttonPad = new THREE.Group();
+  const buttons = [];
+  const buttonGeometry = new THREE.BoxGeometry(0.04, 0.04, 0.01);
+  const buttonMaterial = new THREE.MeshStandardMaterial({
+    color: 0x404040,
+    roughness: 0.5
+  });
+  for (let i = 0; i < 12; i++) {
+    const button = new THREE.Mesh(buttonGeometry, buttonMaterial);
+    const row = Math.floor(i / 3);
+    const col = i % 3;
+    button.position.set((col - 1) * 0.06, -0.1 - row * 0.06, 0.076);
+    buttons.push(button);
+    buttonPad.add(button);
+  }
+  phoneGroup.add(buttonPad);
+  return phoneGroup;
+}
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6e9ed);
 const warningSign = createWarningSign();
@@ -443,6 +516,9 @@ function createReceptionDesk() {
 const receptionDesk = createReceptionDesk();
 receptionDesk.position.set(-8, 0.6, -8);
 scene.add(receptionDesk);
+const phone = createPhoneSystem();
+phone.position.set(-7, 4.5, -9.85);
+scene.add(phone);
 function createPlant() {
   const plantGroup = new THREE.Group();
   const potGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.6, 16);
@@ -962,6 +1038,10 @@ function animate() {
     clock.minuteHand.rotation.z = minuteAngle;
     clock.secondHand.rotation.z = secondAngle;
   }
+  const phone = scene.children.find(child => child.type === 'Group' && child.children.length === 4);
+  if (phone) {
+    phone.children[2].position.y = -0.05 + Math.sin(Date.now() * 0.001) * 0.002;
+  }
   renderer.render(scene, camera);
 }
 window.addEventListener('resize', () => {
@@ -1001,8 +1081,11 @@ function updateAmbientInfo() {
       playWaterSound();
       focusCamera(waterDispenser.position);
       setTimeout(resetCamera, 3000);
-    } else if (newEvent.includes('Phone') || newEvent.includes('typing') || newEvent.includes('conversation')) {
-      if (newEvent.includes('Phone')) playPhoneSound();
+    } else if (newEvent.includes('Phone')) {
+      playPhoneSound();
+      focusCamera(phone.position);
+      setTimeout(resetCamera, 3000);
+    } else if (newEvent.includes('typing') || newEvent.includes('conversation')) {
       if (newEvent.includes('typing')) playRandomTypingSound();
       if (newEvent.includes('conversation')) playConversationSound();
       focusCamera(receptionDesk.position);
