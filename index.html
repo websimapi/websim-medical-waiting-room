@@ -156,35 +156,22 @@ function createGlassDoor() {
 }
 function createCoffeeTable() {
   const table = new THREE.Group();
-  
-  // Glass top
   const glassGeometry = new THREE.BoxGeometry(2, 0.1, 1.2);
   const glassMaterial = createEnhancedGlassMaterial();
   const glassTop = new THREE.Mesh(glassGeometry, glassMaterial);
   glassTop.position.y = 0.5;
-
-  // Metal frame
   const frameMaterial = new THREE.MeshStandardMaterial({
     color: 0x808080,
     metalness: 0.8,
     roughness: 0.2
   });
-
-  // Legs
   const legGeometry = new THREE.BoxGeometry(0.05, 0.5, 0.05);
-  const positions = [
-    [-0.9, 0.25, 0.5],
-    [0.9, 0.25, 0.5], 
-    [-0.9, 0.25, -0.5],
-    [0.9, 0.25, -0.5]
-  ];
-
+  const positions = [[-0.9, 0.25, 0.5], [0.9, 0.25, 0.5], [-0.9, 0.25, -0.5], [0.9, 0.25, -0.5]];
   positions.forEach(pos => {
     const leg = new THREE.Mesh(legGeometry, frameMaterial);
     leg.position.set(...pos);
     table.add(leg);
   });
-
   table.add(glassTop);
   return table;
 }
@@ -500,23 +487,34 @@ function createMagazine() {
   const cover = new THREE.Mesh(coverGeometry, coverMaterial);
   cover.castShadow = true;
   magazine.add(cover);
+  cover.userData.lastInteraction = 0;
+  cover.addEventListener('click', () => {
+    const now = Date.now();
+    if (now - cover.userData.lastInteraction > 1000) {
+      if (magazinePageAudio) {
+        magazinePageAudio.currentTime = 0;
+        magazinePageAudio.play();
+      }
+      cover.userData.lastInteraction = now;
+    }
+  });
   return magazine;
 }
 function createSanitizer() {
   const sanitizer = new THREE.Group();
-  const baseGeometry = new THREE.CylinderGeometry(0.08, 0.1, 0.10, 8); 
+  const baseGeometry = new THREE.CylinderGeometry(0.08, 0.1, 0.12, 8);
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: 0xc2e8ff,
     transparent: true,
     opacity: 0.7
   });
   const base = new THREE.Mesh(baseGeometry, baseMaterial);
-  const pumpGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.04, 8); 
+  const pumpGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.04, 8);
   const pumpMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff
   });
   const pump = new THREE.Mesh(pumpGeometry, pumpMaterial);
-  pump.position.y = 0.07; 
+  pump.position.y = 0.08;
   sanitizer.add(base);
   sanitizer.add(pump);
   return sanitizer;
@@ -542,9 +540,8 @@ function createWaterDispenser() {
   return dispenser;
 }
 const coffeeTable = createCoffeeTable();
-coffeeTable.position.set(0, 0, -5); 
+coffeeTable.position.set(0, 0, -5);
 scene.add(coffeeTable);
-
 const magazineStack = new THREE.Group();
 for (let i = 0; i < 5; i++) {
   const magazine = createMagazine();
@@ -552,10 +549,10 @@ for (let i = 0; i < 5; i++) {
   magazine.rotation.y = Math.random() * Math.PI * 0.2;
   magazineStack.add(magazine);
 }
-magazineStack.position.set(0, 0.6, -5); 
+magazineStack.position.set(0, 0.6, -5);
 scene.add(magazineStack);
 const sanitizer = createSanitizer();
-sanitizer.position.set(-7.7, 1.6, -7.8); 
+sanitizer.position.set(-7.7, 1.2, -7.8);
 scene.add(sanitizer);
 const waterDispenser = createWaterDispenser();
 waterDispenser.position.set(9, 0, -8);
@@ -566,6 +563,17 @@ function animate() {
   controls.update();
   const sanitizerPump = sanitizer.children[1];
   sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
+  magazineStack.children.forEach(magazine => {
+    const cover = magazine.children[0];
+    const now = Date.now();
+    if (Math.random() < 0.001 && now - cover.userData.lastInteraction > 5000) {
+      if (magazinePageAudio) {
+        magazinePageAudio.currentTime = 0;
+        magazinePageAudio.play();
+      }
+      cover.userData.lastInteraction = now;
+    }
+  });
   const door = scene.getObjectById(doorway.id);
   if (door) {
     door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
@@ -602,6 +610,12 @@ setInterval(updateStats, 30000);
 setInterval(updateAmbientInfo, 8000);
 updateStats();
 updateAmbientInfo();
-animate();</script>
+animate();
+let magazinePageAudio;
+function loadAudio() {
+  magazinePageAudio = new Audio('Magazine_page_being_.mp3');
+  magazinePageAudio.load();
+}
+loadAudio();</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
