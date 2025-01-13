@@ -190,7 +190,6 @@ function createCoffeeTable() {
 }
 function createPhoneSystem() {
   const phoneGroup = new THREE.Group();
-
   const baseGeometry = new THREE.BoxGeometry(0.25, 0.35, 0.12);
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
@@ -198,7 +197,6 @@ function createPhoneSystem() {
     metalness: 0.2
   });
   const base = new THREE.Mesh(baseGeometry, baseMaterial);
-
   const screenGeometry = new THREE.PlaneGeometry(0.2, 0.12);
   const screenCanvas = document.createElement('canvas');
   screenCanvas.width = 256;
@@ -211,7 +209,6 @@ function createPhoneSystem() {
   context.textAlign = 'center';
   context.fillText('LINE 1 ACTIVE', 128, 40);
   context.fillText('12:00 PM', 128, 80);
-
   const screenTexture = new THREE.CanvasTexture(screenCanvas);
   const screenMaterial = new THREE.MeshBasicMaterial({
     map: screenTexture,
@@ -221,14 +218,12 @@ function createPhoneSystem() {
   const screen = new THREE.Mesh(screenGeometry, screenMaterial);
   screen.position.z = 0.061;
   screen.position.y = 0.08;
-
   const handsetGeometry = new THREE.BoxGeometry(0.08, 0.22, 0.04);
   const handsetMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     roughness: 0.8
   });
   const handset = new THREE.Mesh(handsetGeometry, handsetMaterial);
-
   const speakerGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.04, 8);
   const speakerMaterial = new THREE.MeshStandardMaterial({
     color: 0x1a1a1a
@@ -245,7 +240,6 @@ function createPhoneSystem() {
   handsetGroup.add(mouthpiece);
   handsetGroup.position.set(0.15, -0.05, 0.1);
   handsetGroup.rotation.z = -Math.PI / 12;
-
   const buttonPad = new THREE.Group();
   const buttons = [];
   const buttonGeometry = new THREE.BoxGeometry(0.03, 0.03, 0.01);
@@ -253,7 +247,6 @@ function createPhoneSystem() {
     color: 0xeeeeee,
     roughness: 0.5
   });
-
   for (let i = 0; i < 12; i++) {
     const button = new THREE.Mesh(buttonGeometry, buttonMaterial);
     const row = Math.floor(i / 3);
@@ -262,17 +255,14 @@ function createPhoneSystem() {
     buttons.push(button);
     buttonPad.add(button);
   }
-
   phoneGroup.add(base);
   phoneGroup.add(screen);
   phoneGroup.add(handsetGroup);
   phoneGroup.add(buttonPad);
-
   return phoneGroup;
 }
 function createCeilingAndDucts() {
   const ceilingGroup = new THREE.Group();
-
   const ceilingGeometry = new THREE.PlaneGeometry(20, 20);
   const ceilingMaterial = new THREE.MeshStandardMaterial({
     color: 0xf0f0f0,
@@ -283,7 +273,6 @@ function createCeilingAndDucts() {
   ceiling.rotation.x = Math.PI / 2;
   ceiling.position.y = 10;
   ceilingGroup.add(ceiling);
-
   const mainDuctGeometry = new THREE.BoxGeometry(2, 0.6, 20);
   const ductMaterial = new THREE.MeshStandardMaterial({
     color: 0xd3d3d3,
@@ -293,16 +282,11 @@ function createCeilingAndDucts() {
   const mainDuct = new THREE.Mesh(mainDuctGeometry, ductMaterial);
   mainDuct.position.set(0, 9.7, 0);
   ceilingGroup.add(mainDuct);
-
   const branchPositions = [-6, -2, 2, 6];
   branchPositions.forEach(x => {
-    const branchDuct = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 0.4, 0.4),
-      ductMaterial
-    );
+    const branchDuct = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 0.4), ductMaterial);
     branchDuct.position.set(x, 9.5, 0);
     ceilingGroup.add(branchDuct);
-
     const ventGeometry = new THREE.CircleGeometry(0.3, 8);
     const ventMaterial = new THREE.MeshStandardMaterial({
       color: 0xcccccc,
@@ -313,8 +297,37 @@ function createCeilingAndDucts() {
     vent.position.set(x, 9.3, 0);
     ceilingGroup.add(vent);
   });
-
   return ceilingGroup;
+}
+function createPenAndClipboard() {
+  const group = new THREE.Group();
+  const boardGeometry = new THREE.BoxGeometry(0.3, 0.02, 0.4);
+  const boardMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8B4513,
+    roughness: 0.8
+  });
+  const clipboard = new THREE.Mesh(boardGeometry, boardMaterial);
+  const paperGeometry = new THREE.PlaneGeometry(0.28, 0.38);
+  const paperMaterial = new THREE.MeshStandardMaterial({
+    color: 0xFFFFFF,
+    roughness: 0.9
+  });
+  const paper = new THREE.Mesh(paperGeometry, paperMaterial);
+  paper.position.y = 0.011;
+  paper.rotation.x = -Math.PI / 2;
+  const penGeometry = new THREE.CylinderGeometry(0.01, 0.01, 0.15, 8);
+  const penMaterial = new THREE.MeshStandardMaterial({
+    color: 0x000080,
+    roughness: 0.5,
+    metalness: 0.5
+  });
+  const pen = new THREE.Mesh(penGeometry, penMaterial);
+  pen.position.set(0.1, 0.02, -0.05);
+  pen.rotation.z = Math.PI / 6;
+  group.add(clipboard);
+  group.add(paper);
+  group.add(pen);
+  return group;
 }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6e9ed);
@@ -569,6 +582,10 @@ function createReceptionDesk() {
   return deskGroup;
 }
 const receptionDesk = createReceptionDesk();
+const penAndClipboard = createPenAndClipboard();
+penAndClipboard.position.set(-7.5, 1.8, -8);
+penAndClipboard.rotation.y = Math.PI / 6;
+scene.add(penAndClipboard);
 receptionDesk.position.set(-8, 0.6, -8);
 scene.add(receptionDesk);
 const phone = createPhoneSystem();
@@ -997,7 +1014,6 @@ function playMaskAdjustSound() {
 }
 function createThermostat() {
   const thermostatGroup = new THREE.Group();
-
   const casingGeometry = new THREE.BoxGeometry(0.4, 0.6, 0.1);
   const casingMaterial = new THREE.MeshStandardMaterial({
     color: 0xeeeeee,
@@ -1005,7 +1021,6 @@ function createThermostat() {
     metalness: 0.2
   });
   const casing = new THREE.Mesh(casingGeometry, casingMaterial);
-
   const screenGeometry = new THREE.PlaneGeometry(0.3, 0.4);
   const screenCanvas = document.createElement('canvas');
   screenCanvas.width = 256;
@@ -1038,7 +1053,7 @@ function createThermostat() {
 const thermostat = createThermostat();
 thermostat.position.set(-5, 5, -9.85);
 scene.add(thermostat);
-function focusCamera(targetPosition, duration = 1000) {
+function focusCamera(targetPosition, duration = 3000) {
   const startPosition = camera.position.clone();
   const startRotation = controls.target.clone();
   const endPosition = targetPosition.clone().add(new THREE.Vector3(0, 2, 5));
@@ -1057,7 +1072,7 @@ function focusCamera(targetPosition, duration = 1000) {
   }
   animate();
 }
-function resetCamera(duration = 1000) {
+function resetCamera(duration = 3000) {
   const defaultPosition = new THREE.Vector3(0, 5, 10);
   const defaultTarget = new THREE.Vector3(0, 2, 0);
   focusCamera(defaultTarget, duration);
@@ -1129,61 +1144,61 @@ function updateAmbientInfo() {
     if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
       playMagazineSound();
       focusCamera(magazineStack.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Children')) {
       playChildrenSound();
       focusCamera(new THREE.Vector3(9.95, 5, 0));
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Water dispenser')) {
       playWaterSound();
       focusCamera(waterDispenser.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Phone')) {
       playPhoneSound();
       focusCamera(phone.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('typing') || newEvent.includes('conversation')) {
       if (newEvent.includes('typing')) playRandomTypingSound();
       if (newEvent.includes('conversation')) playConversationSound();
       focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('cough')) {
       playRandomCoughSound();
       focusCamera(new THREE.Vector3(-3, 0, -8));
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('footsteps')) {
       playFootstepsSound();
       focusCamera(doorway.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Pen')) {
       playRandomPenSound();
       focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('beep')) {
       playBeepSound();
       focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('air conditioning')) {
       playHumSound();
       focusCamera(new THREE.Vector3(0, 9, 0));
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Door opening') || newEvent.includes('whoosh')) {
       if (newEvent.includes('Door opening')) playDoorOpenSound();
       if (newEvent.includes('whoosh')) playDoorWhooshSound();
       focusCamera(doorway.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('sanitizer')) {
       playSanitizerSound();
       focusCamera(sanitizer.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('Clock')) {
       playClockTickSound();
       focusCamera(clock.position);
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     } else if (newEvent.includes('adjusting their mask')) {
       playMaskAdjustSound();
       focusCamera(new THREE.Vector3(-3, 0, -8));
-      setTimeout(resetCamera, 3000);
+      setTimeout(resetCamera, 5000);
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
@@ -1191,7 +1206,6 @@ function updateAmbientInfo() {
 }
 const ceilingAndDucts = createCeilingAndDucts();
 scene.add(ceilingAndDucts);
-animate();
-</script>
+animate();</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
