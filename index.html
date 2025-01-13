@@ -69,32 +69,6 @@ canvas {
 .hidden {
   display: none;
 }
-.thermostat {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
-}
-
-.temp-display {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  margin-top: 35px;
-}
-
-.thermostat.hidden {
-  display: none;
-}
 </style>
 </head><body>
 <div class="stats">
@@ -114,10 +88,6 @@ canvas {
 </div>
 
 <button id="startButton" class="start-button">Start Experience</button>
-
-<div class="thermostat hidden" id="thermostat">
-  <div class="temp-display">72°F</div>
-</div>
 
 <script type="module">import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -229,32 +199,6 @@ function createCoffeeTable() {
   });
   table.add(glassTop);
   return table;
-}
-function createThermostat() {
-  const thermostat = new THREE.Group();
-  
-  // Create thermostat base
-  const baseGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.1, 32);
-  const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0xdddddd,
-    metalness: 0.5,
-    roughness: 0.2
-  });
-  const base = new THREE.Mesh(baseGeometry, baseMaterial);
-  
-  // Create display screen
-  const screenGeometry = new THREE.CircleGeometry(0.3, 32);
-  const screenMaterial = new THREE.MeshStandardMaterial({
-    color: 0x222222,
-    metalness: 0.3,
-    roughness: 0.4
-  });
-  const screen = new THREE.Mesh(screenGeometry, screenMaterial);
-  screen.position.z = 0.05;
-  
-  thermostat.add(base);
-  thermostat.add(screen);
-  return thermostat;
 }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6e9ed);
@@ -835,7 +779,6 @@ function startExperience() {
   startButton.classList.add('hidden');
   document.querySelector('.stats').classList.remove('hidden');
   document.querySelector('.info-board').classList.remove('hidden');
-  document.querySelector('.thermostat').classList.remove('hidden');
   setInterval(updateStats, 30000);
   setInterval(updateAmbientInfo, 8000);
   updateStats();
@@ -845,7 +788,6 @@ function startExperience() {
 startButton.addEventListener('click', startExperience);
 document.querySelector('.stats').classList.add('hidden');
 document.querySelector('.info-board').classList.add('hidden');
-document.querySelector('.thermostat').classList.add('hidden');
 function animate() {
   if (!isExperienceStarted) return;
   requestAnimationFrame(animate);
@@ -886,14 +828,13 @@ function updateStats() {
   const waitTime = document.getElementById('waitTime');
   const nextPatient = document.getElementById('nextPatient');
   const temperature = document.getElementById('temperature');
-  const thermostatDisplay = document.querySelector('.temp-display');
   const patients = ['Johnson, Sarah', 'Smith, Michael', 'Williams, Emma', 'Brown, David', 'Miller, Lisa', 'Davis, John', 'Wilson, Emily'];
   patientCount.textContent = Math.floor(Math.random() * 3) + 3;
   waitTime.textContent = Math.floor(Math.random() * 20) + 15;
   nextPatient.textContent = patients[Math.floor(Math.random() * patients.length)];
-  const currentTemp = Math.floor(Math.random() * 3) + 71;
-  thermostatDisplay.textContent = `${currentTemp}°F`;
-  temperature.textContent = `${currentTemp}°F`;
+  const temp = Math.floor(Math.random() * 3) + 71;
+  temperature.textContent = `${temp}°F`;
+  thermostat.updateTemp(temp);
 }
 function updateAmbientInfo() {
   const ambientInfo = document.getElementById('ambientInfo');
@@ -990,10 +931,46 @@ function playMaskAdjustSound() {
   maskAdjustSound.currentTime = 0;
   maskAdjustSound.play().catch(e => console.warn('Error playing mask adjusting sound:', e));
 }
+function createThermostat() {
+  const thermostatGroup = new THREE.Group();
+  const casingGeometry = new THREE.BoxGeometry(0.4, 0.6, 0.1);
+  const casingMaterial = new THREE.MeshStandardMaterial({
+    color: 0xeeeeee,
+    roughness: 0.5,
+    metalness: 0.2
+  });
+  const casing = new THREE.Mesh(casingGeometry, casingMaterial);
+  const screenGeometry = new THREE.PlaneGeometry(0.3, 0.4);
+  const screenCanvas = document.createElement('canvas');
+  screenCanvas.width = 256;
+  screenCanvas.height = 256;
+  const context = screenCanvas.getContext('2d');
+  function updateScreen(temp) {
+    context.fillStyle = '#121212';
+    context.fillRect(0, 0, 256, 256);
+    context.fillStyle = '#22ff22';
+    context.font = 'bold 72px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(temp + '°F', 128, 128);
+  }
+  const screenTexture = new THREE.CanvasTexture(screenCanvas);
+  const screenMaterial = new THREE.MeshBasicMaterial({
+    map: screenTexture,
+    transparent: true
+  });
+  const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+  screen.position.z = 0.051;
+  thermostatGroup.add(casing);
+  thermostatGroup.add(screen);
+  thermostatGroup.updateTemp = function (temp) {
+    updateScreen(temp);
+    screenTexture.needsUpdate = true;
+  };
+  return thermostatGroup;
+}
 const thermostat = createThermostat();
-thermostat.position.set(9.8, 5, 0);
-thermostat.rotation.y = -Math.PI / 2;
-scene.add(thermostat);
-</script>
+thermostat.position.set(-5, 5, -9.85);
+scene.add(thermostat);</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
