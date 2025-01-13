@@ -730,6 +730,18 @@ function playDoorWhooshSound() {
   doorWhooshSound.currentTime = 0;
   doorWhooshSound.play().catch(e => console.warn('Error playing door whoosh sound:', e));
 }
+const doorOpenSound = new Audio('/Door_opening_as_a_pa.mp3');
+doorOpenSound.onerror = () => {
+  console.warn('Failed to load door opening sound');
+};
+function playDoorOpenSound() {
+  if (doorOpenSound.error) {
+    console.warn('Door opening sound not available');
+    return;
+  }
+  doorOpenSound.currentTime = 0;
+  doorOpenSound.play().catch(e => console.warn('Error playing door opening sound:', e));
+}
 let isExperienceStarted = false;
 const startButton = document.getElementById('startButton');
 function startExperience() {
@@ -806,6 +818,8 @@ function updateAmbientInfo() {
       playBeepSound();
     } else if (newEvent.includes('air conditioning')) {
       playHumSound();
+    } else if (newEvent.includes('Door opening')) {
+      playDoorOpenSound();
     } else if (newEvent.includes('sanitizer')) {
       playSanitizerSound();
     } else if (newEvent.includes('whoosh')) {
