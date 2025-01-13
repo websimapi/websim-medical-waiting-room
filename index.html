@@ -46,6 +46,29 @@ canvas {
   background: rgba(233, 236, 239, 0.8);
   border-radius: 5px;
 }
+.start-button {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px 40px;
+  font-size: 24px;
+  background: #4169e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: background 0.3s;
+}
+
+.start-button:hover {
+  background: #1e40af;
+}
+
+.hidden {
+  display: none;
+}
 </style>
 </head><body>
 <div class="stats">
@@ -63,6 +86,8 @@ canvas {
   <p>Hours: 9:00 AM - 5:00 PM</p>
   <p>Emergency: (555) 555-1234</p>
 </div>
+
+<button id="startButton" class="start-button">Start Experience</button>
 
 <script type="module">import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -705,7 +730,24 @@ function playDoorWhooshSound() {
   doorWhooshSound.currentTime = 0;
   doorWhooshSound.play().catch(e => console.warn('Error playing door whoosh sound:', e));
 }
+let isExperienceStarted = false;
+const startButton = document.getElementById('startButton');
+function startExperience() {
+  isExperienceStarted = true;
+  startButton.classList.add('hidden');
+  document.querySelector('.stats').classList.remove('hidden');
+  document.querySelector('.info-board').classList.remove('hidden');
+  setInterval(updateStats, 30000);
+  setInterval(updateAmbientInfo, 8000);
+  updateStats();
+  updateAmbientInfo();
+  animate();
+}
+startButton.addEventListener('click', startExperience);
+document.querySelector('.stats').classList.add('hidden');
+document.querySelector('.info-board').classList.add('hidden');
 function animate() {
+  if (!isExperienceStarted) return;
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
   controls.update();
@@ -773,11 +815,6 @@ function updateAmbientInfo() {
     console.warn('Error playing ambient sound:', e);
   }
 }
-setInterval(updateStats, 30000);
-setInterval(updateAmbientInfo, 8000);
-updateStats();
-updateAmbientInfo();
-animate();
 const sanitizerSound = new Audio('/Hand_sanitizer_being.mp3');
 sanitizerSound.onerror = () => {
   console.warn('Failed to load hand sanitizer sound');
