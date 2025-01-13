@@ -810,6 +810,8 @@ function updateAmbientInfo() {
       playSanitizerSound();
     } else if (newEvent.includes('whoosh')) {
       playDoorWhooshSound();
+    } else if (newEvent.includes('typing')) {
+      playRandomTypingSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
@@ -826,6 +828,21 @@ function playSanitizerSound() {
   }
   sanitizerSound.currentTime = 0;
   sanitizerSound.play().catch(e => console.warn('Error playing sanitizer sound:', e));
+}
+const typingSounds = [new Audio('/Sound_of_typing_from.mp3'), new Audio('/Sound_of_typing_from (1).mp3'), new Audio('/Sound_of_typing_from (2).mp3'), new Audio('/Sound_of_typing_from (3).mp3')];
+typingSounds.forEach((sound, i) => {
+  sound.onerror = () => {
+    console.warn(`Failed to load typing sound ${i + 1}`);
+  };
+});
+function playRandomTypingSound() {
+  if (typingSounds.some(s => s.error)) {
+    console.warn('Some typing sounds not available');
+    return;
+  }
+  const randomSound = typingSounds[Math.floor(Math.random() * typingSounds.length)];
+  randomSound.currentTime = 0;
+  randomSound.play().catch(e => console.warn('Error playing typing sound:', e));
 }</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
