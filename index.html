@@ -102,15 +102,15 @@ function createWarningSign() {
 function createEnhancedGlassMaterial() {
   return new THREE.MeshPhysicalMaterial({
     transparent: true,
-    opacity: 0.2,
-    roughness: 0.02,
-    transmission: 0.98,
-    thickness: 0.05,
+    opacity: 0.15,
+    roughness: 0.01,
+    transmission: 0.99,
+    thickness: 0.02,
     clearcoat: 1.0,
-    clearcoatRoughness: 0.1,
+    clearcoatRoughness: 0.05,
     ior: 1.52,
-    envMapIntensity: 1.5,
-    reflectivity: 0.9,
+    envMapIntensity: 2.0,
+    reflectivity: 1.0,
     metalness: 0.0,
     attenuationColor: new THREE.Color(0xffffff),
     attenuationDistance: 5.0
@@ -166,9 +166,9 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true
 });
 renderer.physicallyCorrectLights = true;
-renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.8;
+renderer.toneMappingExposure = 0.7;
+renderer.outputEncoding = THREE.sRGBEncoding;
 const pmremGenerator = new PMREMGenerator(renderer);
 const envTexture = pmremGenerator.fromScene(scene).texture;
 scene.environment = envTexture;
@@ -208,9 +208,8 @@ renderer.domElement.addEventListener('touchend', () => {
 }, false);
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
 directionalLight.position.set(10, 8, 5);
-directionalLight.intensity = 0.7;
 directionalLight.castShadow = true;
 directionalLight.shadow.bias = -0.001;
 directionalLight.shadow.mapSize.width = 4096;
@@ -223,7 +222,7 @@ directionalLight.shadow.camera.top = 10;
 directionalLight.shadow.camera.bottom = -10;
 scene.add(directionalLight);
 const pointLight1 = new THREE.PointLight(0xffffff, 0.8);
-pointLight1.position.set(0, 10, 0);
+pointLight1.position.set(0, 10, 0); 
 pointLight1.intensity = 0.6;
 pointLight1.castShadow = true;
 pointLight1.shadow.bias = -0.001;
@@ -269,8 +268,32 @@ rightWall.rotation.y = -Math.PI / 2;
 scene.add(rightWall);
 for (let i = 0; i < 3; i++) {
   const window = createGlassWall(4, 4);
-  window.position.set(9.9, 5, -7 + i * 5);
+  window.position.set(9.95, 5, -7 + i * 5);
   window.rotation.y = -Math.PI / 2;
+  const frameTop = new THREE.Mesh(
+    new THREE.BoxGeometry(4.2, 0.1, 0.1),
+    new THREE.MeshStandardMaterial({ color: 0x505050 })
+  );
+  frameTop.position.set(9.9, 7.05, -7 + i * 5);
+  frameTop.rotation.y = -Math.PI / 2;
+  scene.add(frameTop);
+  
+  const frameBottom = frameTop.clone();
+  frameBottom.position.y = 3.05;
+  scene.add(frameBottom);
+  
+  const frameLeft = new THREE.Mesh(
+    new THREE.BoxGeometry(0.1, 4, 0.1),
+    new THREE.MeshStandardMaterial({ color: 0x505050 })
+  );
+  frameLeft.position.set(9.9, 5, -5.1 + i * 5);
+  frameLeft.rotation.y = -Math.PI / 2;
+  scene.add(frameLeft);
+  
+  const frameRight = frameLeft.clone(); 
+  frameRight.position.z = -8.9 + i * 5;
+  scene.add(frameRight);
+
   scene.add(window);
 }
 const glassWall = createGlassWall(20, 10);
@@ -311,11 +334,11 @@ scene.add(frontBaseboard1);
 const frontBaseboard2 = createBaseboard(5, true);
 frontBaseboard2.position.set(7.5, 0.15, 9.9);
 scene.add(frontBaseboard2);
-const frontBaseboard3 = createBaseboard(2, true);
-frontBaseboard3.position.set(6, 0.15, 9.9);
+const frontBaseboard3 = createBaseboard(1, true);
+frontBaseboard3.position.set(5.5, 0.15, 9.9);
 scene.add(frontBaseboard3);
-const frontBaseboard4 = createBaseboard(2, true);
-frontBaseboard4.position.set(2, 0.15, 9.9);
+const frontBaseboard4 = createBaseboard(1, true);
+frontBaseboard4.position.set(2.5, 0.15, 9.9);
 scene.add(frontBaseboard4);
 function createChair() {
   const chairGroup = new THREE.Group();
