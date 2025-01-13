@@ -621,6 +621,18 @@ function playRandomCoughSound() {
   randomSound.currentTime = 0;
   randomSound.play().catch(e => console.warn('Error playing cough sound:', e));
 }
+const footstepsSound = new Audio('/Muffled_footsteps_fr.mp3');
+footstepsSound.onerror = () => {
+  console.warn('Failed to load footsteps sound');
+};
+function playFootstepsSound() {
+  if (footstepsSound.error) {
+    console.warn('Footsteps sound not available');
+    return;
+  }
+  footstepsSound.currentTime = 0;
+  footstepsSound.play().catch(e => console.warn('Error playing footsteps sound:', e));
+}
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -672,6 +684,8 @@ function updateAmbientInfo() {
       playConversationSound();
     } else if (newEvent.includes('cough')) {
       playRandomCoughSound();
+    } else if (newEvent.includes('footsteps')) {
+      playFootstepsSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
