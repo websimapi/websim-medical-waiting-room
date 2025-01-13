@@ -495,8 +495,38 @@ function createClock() {
     color: 0x000000
   });
   const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+  for (let i = 0; i < 12; i++) {
+    const angle = i * Math.PI / 6 - Math.PI / 2;
+    const markerGeometry = new THREE.BoxGeometry(0.05, 0.02, 0.01);
+    const marker = new THREE.Mesh(markerGeometry, frameMaterial);
+    marker.position.x = Math.cos(angle) * 0.4;
+    marker.position.y = Math.sin(angle) * 0.4;
+    marker.rotation.z = angle;
+    clockGroup.add(marker);
+  }
+  const hourHandGeometry = new THREE.BoxGeometry(0.2, 0.03, 0.01);
+  const minuteHandGeometry = new THREE.BoxGeometry(0.3, 0.02, 0.01);
+  const secondHandGeometry = new THREE.BoxGeometry(0.35, 0.01, 0.01);
+  const hourHand = new THREE.Mesh(hourHandGeometry, new THREE.MeshStandardMaterial({
+    color: 0x000000
+  }));
+  const minuteHand = new THREE.Mesh(minuteHandGeometry, new THREE.MeshStandardMaterial({
+    color: 0x000000
+  }));
+  const secondHand = new THREE.Mesh(secondHandGeometry, new THREE.MeshStandardMaterial({
+    color: 0xff0000
+  }));
+  hourHand.position.x = 0.1;
+  minuteHand.position.x = 0.15;
+  secondHand.position.x = 0.175;
+  clockGroup.add(hourHand);
+  clockGroup.add(minuteHand);
+  clockGroup.add(secondHand);
   clockGroup.add(face);
   clockGroup.add(frame);
+  clockGroup.hourHand = hourHand;
+  clockGroup.minuteHand = minuteHand;
+  clockGroup.secondHand = secondHand;
   return clockGroup;
 }
 const clock = createClock();
@@ -773,6 +803,19 @@ function animate() {
   windows.forEach(window => {
     window.material.envMapIntensity = 1.2 + Math.sin(Date.now() * 0.001) * 0.2;
   });
+  const now = new Date();
+  const hours = now.getHours() % 12;
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+  const milliseconds = now.getMilliseconds();
+  const hourAngle = (hours + minutes / 60) * Math.PI / 6 - Math.PI / 2;
+  const minuteAngle = (minutes + seconds / 60) * Math.PI / 30 - Math.PI / 2;
+  const secondAngle = (seconds + milliseconds / 1000) * Math.PI / 30 - Math.PI / 2;
+  if (clock.hourHand) {
+    clock.hourHand.rotation.z = hourAngle;
+    clock.minuteHand.rotation.z = minuteAngle;
+    clock.secondHand.rotation.z = secondAngle;
+  }
   renderer.render(scene, camera);
 }
 window.addEventListener('resize', () => {
