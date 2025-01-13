@@ -606,6 +606,21 @@ function playConversationSound() {
   conversationSound.currentTime = 0;
   conversationSound.play().catch(e => console.warn('Error playing conversation sound:', e));
 }
+const coughSounds = [new Audio('/Subtle_Cough_from_co.mp3'), new Audio('/Subtle_Cough_from_co (1).mp3'), new Audio('/Subtle_Cough_from_co (2).mp3'), new Audio('/Subtle_Cough_from_co (3).mp3')];
+coughSounds.forEach((sound, i) => {
+  sound.onerror = () => {
+    console.warn(`Failed to load cough sound ${i + 1}`);
+  };
+});
+function playRandomCoughSound() {
+  if (coughSounds.some(s => s.error)) {
+    console.warn('Some cough sounds not available');
+    return;
+  }
+  const randomSound = coughSounds[Math.floor(Math.random() * coughSounds.length)];
+  randomSound.currentTime = 0;
+  randomSound.play().catch(e => console.warn('Error playing cough sound:', e));
+}
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -655,6 +670,8 @@ function updateAmbientInfo() {
       playPhoneSound();
     } else if (newEvent.includes('conversation')) {
       playConversationSound();
+    } else if (newEvent.includes('cough')) {
+      playRandomCoughSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
