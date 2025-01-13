@@ -38,17 +38,6 @@ canvas {
   padding: 10px;
   border-left: 3px solid #ccc;
 }
-.warning-sign {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 8px;
-  background: rgba(255, 249, 196, 0.9);
-  border: 1px solid #ffd600;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
 .info-board {
   position: absolute;
   bottom: 10px;
@@ -67,11 +56,6 @@ canvas {
   <p>Room Temperature: <span id="temperature">72°F</span></p>
   <div class="ambient-info" id="ambientInfo"></div>
 </div>
-<div class="warning-sign">
-  Please sanitize hands before check-in
-  <br>
-  Masks required beyond this point
-</div>
 
 <div class="info-board" id="infoBoard">
   <h4>Office Information</h4>
@@ -84,8 +68,56 @@ canvas {
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+// Add function to create warning sign
+function createWarningSign() {
+  const signGroup = new THREE.Group();
+  
+  // Create sign backing
+  const signGeometry = new THREE.PlaneGeometry(2, 1.2);
+  const signMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0xfff9c4,
+    roughness: 0.9,
+    metalness: 0.1
+  });
+  const sign = new THREE.Mesh(signGeometry, signMaterial);
+  
+  // Create text using canvas texture
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const context = canvas.getContext('2d');
+  
+  context.fillStyle = '#000000';
+  context.font = 'bold 40px Arial';
+  context.textAlign = 'center';
+  context.fillText('Please sanitize hands', 256, 80);
+  context.fillText('before check-in', 256, 130);
+  context.fillText('Masks required', 256, 180);
+  context.fillText('beyond this point', 256, 230);
+  
+  const texture = new THREE.CanvasTexture(canvas);
+  const textGeometry = new THREE.PlaneGeometry(1.95, 1.15);
+  const textMaterial = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true
+  });
+  const text = new THREE.Mesh(textGeometry, textMaterial);
+  text.position.z = 0.01;
+  
+  signGroup.add(sign);
+  signGroup.add(text);
+  
+  return signGroup;
+}
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f4f8);
+
+// Add warning sign to scene
+const warningSign = createWarningSign();
+warningSign.position.set(4, 6, -9.8);
+warningSign.rotation.x = -Math.PI * 0.05; // Slight downward tilt
+scene.add(warningSign);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 5, 10);
