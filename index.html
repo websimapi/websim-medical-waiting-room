@@ -1,4 +1,4 @@
-<html><head><base href="." /><title>A.I. Medical Waiting Room</title>
+<html><head><base href="."><title>A.I. Medical Waiting Room</title>
 <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
 <script type="importmap">
 {
@@ -53,7 +53,7 @@ canvas {
   <p>Current Patients: <span id="patientCount">4</span></p>
   <p>Average Wait Time: <span id="waitTime">23</span> minutes</p>
   <p>Next Patient: <span id="nextPatient">Johnson, Sarah</span></p>
-  <p>Room Temperature: <span id="temperature">72°F</span></p>
+  <p>Room Temperature: <span id="temperature">72&#xb0;F</span></p>
   <div class="ambient-info" id="ambientInfo"></div>
 </div>
 
@@ -64,30 +64,22 @@ canvas {
   <p>Emergency: (555) 555-1234</p>
 </div>
 
-<script type="module">
-import * as THREE from 'three';
+<script type="module">import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PMREMGenerator } from 'three';
-
-// Add function to create warning sign
 function createWarningSign() {
   const signGroup = new THREE.Group();
-  
-  // Create sign backing
   const signGeometry = new THREE.PlaneGeometry(2, 1.2);
-  const signMaterial = new THREE.MeshStandardMaterial({ 
+  const signMaterial = new THREE.MeshStandardMaterial({
     color: 0xfff9c4,
     roughness: 0.9,
     metalness: 0.1
   });
   const sign = new THREE.Mesh(signGeometry, signMaterial);
-  
-  // Create text using canvas texture
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 256;
   const context = canvas.getContext('2d');
-  
   context.fillStyle = '#000000';
   context.font = 'bold 40px Arial';
   context.textAlign = 'center';
@@ -95,7 +87,6 @@ function createWarningSign() {
   context.fillText('before check-in', 256, 130);
   context.fillText('Masks required', 256, 180);
   context.fillText('beyond this point', 256, 230);
-  
   const texture = new THREE.CanvasTexture(canvas);
   const textGeometry = new THREE.PlaneGeometry(1.95, 1.15);
   const textMaterial = new THREE.MeshBasicMaterial({
@@ -104,150 +95,113 @@ function createWarningSign() {
   });
   const text = new THREE.Mesh(textGeometry, textMaterial);
   text.position.z = 0.01;
-  
   signGroup.add(sign);
   signGroup.add(text);
-  
   return signGroup;
 }
-
-// Add function to create glass material
 function createEnhancedGlassMaterial() {
   return new THREE.MeshPhysicalMaterial({
     transparent: true,
-    opacity: 0.2, 
+    opacity: 0.2,
     roughness: 0.05,
-    transmission: 0.98, 
-    thickness: 0.02, 
+    transmission: 0.98,
+    thickness: 0.02,
     clearcoat: 1.0,
     clearcoatRoughness: 0.1,
     ior: 1.5,
-    envMapIntensity: 1.2, 
-    reflectivity: 0.8, 
-    metalness: 0.02 
+    envMapIntensity: 1.2,
+    reflectivity: 0.8,
+    metalness: 0.02
   });
 }
-
-// Add function to create glass wall
 function createGlassWall(width, height) {
-  const glass = new THREE.Mesh(
-    new THREE.PlaneGeometry(width, height, 50, 50),
-    createEnhancedGlassMaterial()
-  );
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(width, height, 50, 50), createEnhancedGlassMaterial());
   return glass;
 }
-
-// Add function to create glass door
 function createGlassDoor() {
   const doorGroup = new THREE.Group();
-  
-  // Door glass
-  const glass = new THREE.Mesh(
-    new THREE.PlaneGeometry(2, 4, 50, 50),
-    createEnhancedGlassMaterial()
-  );
-  
-  // Door frame
-  const frameGeometry = new THREE.BoxGeometry(2.1, 4.1, 0.08); 
-  const frameMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0x505050,
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.8, 0.1), createEnhancedGlassMaterial());
+  const frameGeometry = new THREE.BoxGeometry(2.2, 4.2, 0.2);
+  const frameMaterial = new THREE.MeshStandardMaterial({
+    color: 0x404040,
     roughness: 0.7,
-    metalness: 0.3
+    metalness: 0.4
   });
   const frame = new THREE.Mesh(frameGeometry, frameMaterial);
-  frame.position.z = -0.04; 
-  
-  // Door handle
-  const handleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4);
-  const handleMaterial = new THREE.MeshStandardMaterial({ color: 0xc0c0c0 });
-  const handle = new THREE.Mesh(handleGeometry, handleMaterial);
-  handle.rotation.x = Math.PI / 2;
-  handle.position.set(0.8, 0, 0.1);
-  
+  frame.position.z = -0.05;
+  const handleBase = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 0.1), new THREE.MeshStandardMaterial({
+    color: 0xc0c0c0,
+    metalness: 0.8
+  }));
+  handleBase.position.set(0.8, 0, 0.1);
+  const handleBar = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4), new THREE.MeshStandardMaterial({
+    color: 0xc0c0c0,
+    metalness: 0.8
+  }));
+  handleBar.rotation.x = Math.PI / 2;
+  handleBar.position.set(0.85, 0, 0.15);
   doorGroup.add(glass);
   doorGroup.add(frame);
-  doorGroup.add(handle);
-  
+  doorGroup.add(handleBase);
+  doorGroup.add(handleBar);
   return doorGroup;
 }
-
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xe6e9ed); 
-
-// Add warning sign to scene
+scene.background = new THREE.Color(0xe6e9ed);
 const warningSign = createWarningSign();
 warningSign.position.set(4, 6, -9.8);
-warningSign.rotation.x = -Math.PI * 0.05; // Slight downward tilt
+warningSign.rotation.x = -Math.PI * 0.05;
 scene.add(warningSign);
-
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 5, 10);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({
+  antialias: true
+});
 renderer.physicallyCorrectLights = true;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-// Generate environment map for reflections
 const pmremGenerator = new PMREMGenerator(renderer);
 const envTexture = pmremGenerator.fromScene(scene).texture;
 scene.environment = envTexture;
 pmremGenerator.dispose();
-
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 2, 0);
 controls.update();
-
-// Initialize touch controls variables
 let touchStartX = 0;
 let touchStartY = 0;
 let isTouching = false;
-
-// Modify OrbitControls settings for better mobile experience
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.screenSpacePanning = false;
 controls.maxPolarAngle = Math.PI / 2;
 controls.minDistance = 5;
 controls.maxDistance = 15;
-
-// Add touch controls
-renderer.domElement.addEventListener('touchstart', (e) => {
+renderer.domElement.addEventListener('touchstart', e => {
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
   isTouching = true;
 }, false);
-
-renderer.domElement.addEventListener('touchmove', (e) => {
+renderer.domElement.addEventListener('touchmove', e => {
   if (!isTouching) return;
-
   const touchX = e.touches[0].clientX;
   const touchY = e.touches[0].clientY;
-
   const deltaX = (touchX - touchStartX) * 0.01;
   const deltaY = (touchY - touchStartY) * 0.01;
-
   camera.position.x += deltaX;
   camera.position.y = Math.max(2, Math.min(8, camera.position.y - deltaY));
-
   touchStartX = touchX;
   touchStartY = touchY;
 }, false);
-
 renderer.domElement.addEventListener('touchend', () => {
   isTouching = false;
 }, false);
-
-// Enhanced lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); 
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
 scene.add(ambientLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9); 
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
 directionalLight.position.set(5, 5, 5);
 directionalLight.castShadow = true;
 directionalLight.shadow.bias = -0.001;
@@ -260,8 +214,6 @@ directionalLight.shadow.camera.right = 10;
 directionalLight.shadow.camera.top = 10;
 directionalLight.shadow.camera.bottom = -10;
 scene.add(directionalLight);
-
-// Add point lights for more realistic lighting
 const pointLight1 = new THREE.PointLight(0xffffff, 0.8);
 pointLight1.position.set(0, 8, 0);
 pointLight1.castShadow = true;
@@ -269,7 +221,6 @@ pointLight1.shadow.bias = -0.001;
 pointLight1.shadow.mapSize.width = 2048;
 pointLight1.shadow.mapSize.height = 2048;
 scene.add(pointLight1);
-
 const pointLight2 = new THREE.PointLight(0xffffff, 0.6);
 pointLight2.position.set(-5, 8, -5);
 pointLight2.castShadow = true;
@@ -277,10 +228,8 @@ pointLight2.shadow.bias = -0.001;
 pointLight2.shadow.mapSize.width = 2048;
 pointLight2.shadow.mapSize.height = 2048;
 scene.add(pointLight2);
-
-// Enhanced floor with texture
 const floorGeometry = new THREE.PlaneGeometry(20, 20, 50, 50);
-const floorMaterial = new THREE.MeshStandardMaterial({ 
+const floorMaterial = new THREE.MeshStandardMaterial({
   color: 0xe6e6fa,
   roughness: 0.8,
   metalness: 0.2
@@ -289,215 +238,164 @@ const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
-
-// Add right wall with glass windows
-const wallMaterial = new THREE.MeshStandardMaterial({ 
+const wallMaterial = new THREE.MeshStandardMaterial({
   color: 0xffffff,
   roughness: 0.9,
   metalness: 0.1
 });
-
-const backWall = new THREE.Mesh(
-  new THREE.PlaneGeometry(20, 10),
-  wallMaterial
-);
+const backWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
 backWall.position.z = -10;
 backWall.position.y = 5;
 scene.add(backWall);
-
-const leftWall = new THREE.Mesh(
-  new THREE.PlaneGeometry(20, 10),
-  wallMaterial
-);
+const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
 leftWall.position.x = -10;
 leftWall.position.y = 5;
 leftWall.rotation.y = Math.PI / 2;
 scene.add(leftWall);
-
-const rightWall = new THREE.Mesh(
-  new THREE.PlaneGeometry(20, 10),
-  wallMaterial
-);
+const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
 rightWall.position.x = 10;
 rightWall.position.y = 5;
 rightWall.rotation.y = -Math.PI / 2;
 scene.add(rightWall);
-
-// Add windows to right wall
-for(let i = 0; i < 3; i++) {
+for (let i = 0; i < 3; i++) {
   const window = createGlassWall(4, 4);
-  window.position.set(9.9, 5, -7 + (i * 5));
+  window.position.set(9.9, 5, -7 + i * 5);
   window.rotation.y = -Math.PI / 2;
   scene.add(window);
 }
-
-// Add front glass wall
 const glassWall = createGlassWall(20, 10);
 glassWall.position.set(0, 5, 10);
 glassWall.rotation.y = Math.PI;
 scene.add(glassWall);
-
-// Add entrance doorway
 const doorway = createGlassDoor();
 doorway.position.set(4, 2, 9.9);
 doorway.rotation.y = Math.PI;
 scene.add(doorway);
-
-// Add pillar next to door
-const pillarGeometry = new THREE.BoxGeometry(0.4, 10, 0.4);  
-const pillarMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+const pillarGeometry = new THREE.BoxGeometry(0.4, 10, 0.4);
+const pillarMaterial = new THREE.MeshStandardMaterial({
+  color: 0x808080
+});
 const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
 pillar.position.set(5.2, 5, 9.8);
 scene.add(pillar);
-
-// Add baseboards
 function createBaseboard(length, isHorizontal) {
   const baseboardGeometry = new THREE.BoxGeometry(isHorizontal ? length : 0.2, 0.3, isHorizontal ? 0.2 : length);
-  const baseboardMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+  const baseboardMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8b4513
+  });
   return new THREE.Mesh(baseboardGeometry, baseboardMaterial);
 }
-
 const backBaseboard = createBaseboard(20, true);
 backBaseboard.position.set(0, 0.15, -9.9);
 scene.add(backBaseboard);
-
 const leftBaseboard = createBaseboard(20, false);
 leftBaseboard.position.set(-9.9, 0.15, 0);
 scene.add(leftBaseboard);
-
 const rightBaseboard = createBaseboard(20, false);
 rightBaseboard.position.set(9.9, 0.15, 0);
 scene.add(rightBaseboard);
-
-const frontBaseboard1 = createBaseboard(7, true); 
-frontBaseboard1.position.set(-6.5, 0.15, 9.9);
+const frontBaseboard1 = createBaseboard(5, true);
+frontBaseboard1.position.set(-7.5, 0.15, 9.9);
 scene.add(frontBaseboard1);
-
-const frontBaseboard2 = createBaseboard(7, true); 
-frontBaseboard2.position.set(6.5, 0.15, 9.9);
+const frontBaseboard2 = createBaseboard(5, true);
+frontBaseboard2.position.set(7.5, 0.15, 9.9);
 scene.add(frontBaseboard2);
-
-// Enhanced chair creation
+const doorTrimLeft = createBaseboard(4, false);
+doorTrimLeft.position.set(2.9, 0.15, 9.9);
+scene.add(doorTrimLeft);
+const doorTrimRight = createBaseboard(4, false);
+doorTrimRight.position.set(5.1, 0.15, 9.9);
+scene.add(doorTrimRight);
+const doorTrimTop = createBaseboard(2.4, true);
+doorTrimTop.position.set(4, 4.15, 9.9);
+scene.add(doorTrimTop);
 function createChair() {
   const chairGroup = new THREE.Group();
-  
-  // More detailed seat
   const seatGeometry = new THREE.BoxGeometry(1, 0.1, 1);
-  const seatMaterial = new THREE.MeshStandardMaterial({ 
+  const seatMaterial = new THREE.MeshStandardMaterial({
     color: 0x4169e1,
     roughness: 0.7,
     metalness: 0.3
   });
   const seat = new THREE.Mesh(seatGeometry, seatMaterial);
-  seat.position.y = 0.55; 
+  seat.position.y = 0.55;
   seat.castShadow = true;
-  
-  // More detailed back
   const backGeometry = new THREE.BoxGeometry(1, 1.2, 0.1);
   const back = new THREE.Mesh(backGeometry, seatMaterial);
-  back.position.y = 1.15; 
+  back.position.y = 1.15;
   back.position.z = -0.45;
   back.castShadow = true;
-  
-  // Add chair legs
   const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.5);
-  const legMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-  
-  const positions = [
-    [-0.4, 0.25, 0.4], 
-    [0.4, 0.25, 0.4],
-    [-0.4, 0.25, -0.4],
-    [0.4, 0.25, -0.4]
-  ];
-  
+  const legMaterial = new THREE.MeshStandardMaterial({
+    color: 0x808080
+  });
+  const positions = [[-0.4, 0.25, 0.4], [0.4, 0.25, 0.4], [-0.4, 0.25, -0.4], [0.4, 0.25, -0.4]];
   positions.forEach(pos => {
     const leg = new THREE.Mesh(legGeometry, legMaterial);
     leg.position.set(...pos);
     leg.castShadow = true;
     chairGroup.add(leg);
   });
-  
   chairGroup.add(seat);
   chairGroup.add(back);
-  
   return chairGroup;
 }
-
-// Add chairs
 const chairs = [];
-for(let i = 0; i < 4; i++) {
+for (let i = 0; i < 4; i++) {
   const chair = createChair();
-  chair.position.set(-3 + (i * 2), 0, -8);
+  chair.position.set(-3 + i * 2, 0, -8);
   scene.add(chair);
   chairs.push(chair);
 }
-
-// Enhanced reception desk
 function createReceptionDesk() {
   const deskGroup = new THREE.Group();
-  
-  // Main desk body
   const deskGeometry = new THREE.BoxGeometry(4, 1.2, 1);
-  const deskMaterial = new THREE.MeshStandardMaterial({ 
+  const deskMaterial = new THREE.MeshStandardMaterial({
     color: 0xa0522d,
     roughness: 0.6,
     metalness: 0.2
   });
   const desk = new THREE.Mesh(deskGeometry, deskMaterial);
   desk.castShadow = true;
-  
-  // Add desktop items
   const computerGeometry = new THREE.BoxGeometry(0.8, 0.5, 0.5);
-  const computerMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+  const computerMaterial = new THREE.MeshStandardMaterial({
+    color: 0x333333
+  });
   const computer = new THREE.Mesh(computerGeometry, computerMaterial);
   computer.position.set(-1, 0.85, 0);
-  
-  // Add monitor
   const monitorGeometry = new THREE.BoxGeometry(0.8, 0.6, 0.1);
   const monitor = new THREE.Mesh(monitorGeometry, computerMaterial);
   monitor.position.set(-1, 1.5, 0);
-  
-  const keyboard = new THREE.Mesh(
-    new THREE.BoxGeometry(0.4, 0.05, 0.2),
-    new THREE.MeshStandardMaterial({ color: 0x333333 })
-  );
+  const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.2), new THREE.MeshStandardMaterial({
+    color: 0x333333
+  }));
   keyboard.position.set(-1, 0.85, 0.3);
   deskGroup.add(keyboard);
-
-  const mouse = new THREE.Mesh(
-    new THREE.BoxGeometry(0.1, 0.03, 0.15),
-    new THREE.MeshStandardMaterial({ color: 0x333333 })
-  );
+  const mouse = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.03, 0.15), new THREE.MeshStandardMaterial({
+    color: 0x333333
+  }));
   mouse.position.set(-0.7, 0.85, 0.3);
   deskGroup.add(mouse);
-  
   deskGroup.add(desk);
   deskGroup.add(computer);
   deskGroup.add(monitor);
-  
   return deskGroup;
 }
-
 const receptionDesk = createReceptionDesk();
 receptionDesk.position.set(-8, 0.6, -8);
 scene.add(receptionDesk);
-
-// Enhanced plant
 function createPlant() {
   const plantGroup = new THREE.Group();
-  
   const potGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.6, 16);
-  const potMaterial = new THREE.MeshStandardMaterial({ 
+  const potMaterial = new THREE.MeshStandardMaterial({
     color: 0x8b4513,
     roughness: 0.8
   });
   const pot = new THREE.Mesh(potGeometry, potMaterial);
   pot.castShadow = true;
-  
-  // Create multiple leaf clusters for more detail
-  for(let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5; i++) {
     const leavesGeometry = new THREE.SphereGeometry(0.3, 8, 8);
-    const leavesMaterial = new THREE.MeshStandardMaterial({ 
+    const leavesMaterial = new THREE.MeshStandardMaterial({
       color: 0x228b22,
       roughness: 1.0
     });
@@ -508,101 +406,83 @@ function createPlant() {
     leaves.castShadow = true;
     plantGroup.add(leaves);
   }
-  
   plantGroup.add(pot);
-  
   return plantGroup;
 }
-
 const plant = createPlant();
 plant.position.set(8, 0, -8);
 scene.add(plant);
-
-// Enhanced wall clock
 function createClock() {
   const clockGroup = new THREE.Group();
-  
   const faceGeometry = new THREE.CircleGeometry(0.5, 32);
-  const faceMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+  const faceMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff
+  });
   const face = new THREE.Mesh(faceGeometry, faceMaterial);
-  
   const frameGeometry = new THREE.RingGeometry(0.5, 0.55, 32);
-  const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+  const frameMaterial = new THREE.MeshStandardMaterial({
+    color: 0x000000
+  });
   const frame = new THREE.Mesh(frameGeometry, frameMaterial);
-  
   clockGroup.add(face);
   clockGroup.add(frame);
-  
   return clockGroup;
 }
-
 const clock = createClock();
 clock.position.set(0, 7, -9.9);
 scene.add(clock);
-
-// Function to create magazines
 function createMagazine() {
   const magazine = new THREE.Group();
-  
   const coverGeometry = new THREE.BoxGeometry(0.3, 0.02, 0.4);
-  const coverMaterial = new THREE.MeshStandardMaterial({ 
+  const coverMaterial = new THREE.MeshStandardMaterial({
     color: Math.random() > 0.5 ? 0x4287f5 : 0xff6b6b,
     roughness: 0.7
   });
   const cover = new THREE.Mesh(coverGeometry, coverMaterial);
   cover.castShadow = true;
   magazine.add(cover);
-  
   return magazine;
 }
-
-// Function to create hand sanitizer
 function createSanitizer() {
   const sanitizer = new THREE.Group();
-  
   const baseGeometry = new THREE.CylinderGeometry(0.1, 0.12, 0.3, 8);
-  const baseMaterial = new THREE.MeshStandardMaterial({ 
+  const baseMaterial = new THREE.MeshStandardMaterial({
     color: 0xc2e8ff,
     transparent: true,
     opacity: 0.7
   });
   const base = new THREE.Mesh(baseGeometry, baseMaterial);
-  
   const pumpGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.1, 8);
-  const pumpMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+  const pumpMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff
+  });
   const pump = new THREE.Mesh(pumpGeometry, pumpMaterial);
   pump.position.y = 0.2;
-  
   sanitizer.add(base);
   sanitizer.add(pump);
   return sanitizer;
 }
-
-// Function to create water dispenser
 function createWaterDispenser() {
   const dispenser = new THREE.Group();
-  
   const tankGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.8, 8);
-  const tankMaterial = new THREE.MeshStandardMaterial({ 
+  const tankMaterial = new THREE.MeshStandardMaterial({
     color: 0xc2e8ff,
     transparent: true,
     opacity: 0.6
   });
   const tank = new THREE.Mesh(tankGeometry, tankMaterial);
-  
   const baseGeometry = new THREE.BoxGeometry(0.5, 0.6, 0.5);
-  const baseMaterial = new THREE.MeshStandardMaterial({ color: 0xeeeeee });
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: 0xeeeeee
+  });
   const base = new THREE.Mesh(baseGeometry, baseMaterial);
   base.position.y = -0.7;
-  
   dispenser.add(tank);
   dispenser.add(base);
   return dispenser;
 }
-
-// Add new objects to scene
 const magazineStack = new THREE.Group();
-for(let i = 0; i < 5; i++) {
+for (let i = 0; i < 5; i++) {
   const magazine = createMagazine();
   magazine.position.y = i * 0.02;
   magazine.rotation.y = Math.random() * Math.PI * 0.2;
@@ -610,105 +490,54 @@ for(let i = 0; i < 5; i++) {
 }
 magazineStack.position.set(8, 0.6, -7);
 scene.add(magazineStack);
-
 const sanitizer = createSanitizer();
 sanitizer.position.set(-7.5, 1.2, -7.5);
 scene.add(sanitizer);
-
 const waterDispenser = createWaterDispenser();
 waterDispenser.position.set(9, 1.4, -8);
 scene.add(waterDispenser);
-
-// Animation
 function animate() {
   requestAnimationFrame(animate);
-  
-  // Subtle ambient movement
   plant.rotation.y += 0.001;
-  
-  // Update controls
   controls.update();
-  
-  // Animation for sanitizer pump
   const sanitizerPump = sanitizer.children[1];
   sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
-  
-  // Add subtle door swing animation
   const door = scene.getObjectById(doorway.id);
-  if(door) {
-    door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
+  if (door) {
+    door.rotation.y = Math.PI;
   }
-  
-  // Add time-based window reflections
-  const windows = scene.children.filter(child => 
-    child.material && child.material.type === 'MeshPhysicalMaterial'
-  );
-
+  const windows = scene.children.filter(child => child.material && child.material.type === 'MeshPhysicalMaterial');
   windows.forEach(window => {
     window.material.envMapIntensity = 1.2 + Math.sin(Date.now() * 0.001) * 0.2;
   });
-  
   renderer.render(scene, camera);
 }
-
-// Window resize handler
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-// Stats updates
 function updateStats() {
   const patientCount = document.getElementById('patientCount');
   const waitTime = document.getElementById('waitTime');
   const nextPatient = document.getElementById('nextPatient');
   const temperature = document.getElementById('temperature');
-  
   const patients = ['Johnson, Sarah', 'Smith, Michael', 'Williams, Emma', 'Brown, David', 'Miller, Lisa', 'Davis, John', 'Wilson, Emily'];
-  
   patientCount.textContent = Math.floor(Math.random() * 3) + 3;
   waitTime.textContent = Math.floor(Math.random() * 20) + 15;
   nextPatient.textContent = patients[Math.floor(Math.random() * patients.length)];
   temperature.textContent = `${Math.floor(Math.random() * 3) + 71}°F`;
 }
-
 function updateAmbientInfo() {
   const ambientInfo = document.getElementById('ambientInfo');
-  const existingEvents = [
-    'Pages rustling as someone reads a magazine...',
-    'Gentle hum of the air conditioning...',
-    'Quiet conversation at the reception desk...',
-    'Phone ringing in the distance...',
-    'Sound of typing from the receptionist...',
-    'Door opening as a patient enters...',
-    'Water dispenser bubbling softly...',
-    'Muffled footsteps from the hallway...',
-    'Pen scratching on clipboard...',
-    'Subtle cough from the corner...',
-    'Children\'s voices from outside...',
-    'Magazine pages being turned...'
-  ];
-  const ambientEvents = [
-    ...existingEvents,
-    'Water dispenser making quiet bubbling sounds...',
-    'Hand sanitizer being used...',
-    'Someone flipping through a magazine...',
-    'Quiet beep from the reception computer...',
-    'Gentle whoosh of the automatic doors...',
-    'Someone adjusting their mask...',
-    'Clock ticking softly on the wall...'
-  ];
-  
+  const existingEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...'];
+  const ambientEvents = [...existingEvents, 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Someone flipping through a magazine...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
   ambientInfo.textContent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
 }
-
 setInterval(updateStats, 30000);
 setInterval(updateAmbientInfo, 8000);
-
 updateStats();
 updateAmbientInfo();
-animate();
-</script>
+animate();</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
