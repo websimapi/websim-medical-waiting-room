@@ -693,6 +693,18 @@ function playHumSound() {
     }
   }, 100);
 }
+const doorWhooshSound = new Audio('/Gentle_Woosh_of_auto.mp3');
+doorWhooshSound.onerror = () => {
+  console.warn('Failed to load door whoosh sound');
+};
+function playDoorWhooshSound() {
+  if (doorWhooshSound.error) {
+    console.warn('Door whoosh sound not available');
+    return;
+  }
+  doorWhooshSound.currentTime = 0;
+  doorWhooshSound.play().catch(e => console.warn('Error playing door whoosh sound:', e));
+}
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -754,6 +766,8 @@ function updateAmbientInfo() {
       playHumSound();
     } else if (newEvent.includes('sanitizer')) {
       playSanitizerSound();
+    } else if (newEvent.includes('whoosh')) {
+      playDoorWhooshSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
