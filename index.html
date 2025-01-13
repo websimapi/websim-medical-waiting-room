@@ -102,9 +102,9 @@ function createWarningSign() {
 function createEnhancedGlassMaterial() {
   return new THREE.MeshPhysicalMaterial({
     transparent: true,
-    opacity: 0.2,
+    opacity: 0.3,
     roughness: 0.05,
-    transmission: 0.98,
+    transmission: 0.95,
     thickness: 0.02,
     clearcoat: 1.0,
     clearcoatRoughness: 0.1,
@@ -120,30 +120,36 @@ function createGlassWall(width, height) {
 }
 function createGlassDoor() {
   const doorGroup = new THREE.Group();
-  const glass = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.8, 0.1), createEnhancedGlassMaterial());
-  const frameGeometry = new THREE.BoxGeometry(2.2, 4.2, 0.2);
-  const frameMaterial = new THREE.MeshStandardMaterial({
-    color: 0x404040,
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(2, 4, 50, 50), createEnhancedGlassMaterial());
+  const frameTop = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.1, 0.08), new THREE.MeshStandardMaterial({
+    color: 0x505050,
     roughness: 0.7,
-    metalness: 0.4
+    metalness: 0.3
+  }));
+  frameTop.position.y = 2.05;
+  frameTop.position.z = -0.04;
+  const frameSides = [];
+  for (let i = 0; i < 2; i++) {
+    const side = new THREE.Mesh(new THREE.BoxGeometry(0.1, 4, 0.08), new THREE.MeshStandardMaterial({
+      color: 0x505050,
+      roughness: 0.7,
+      metalness: 0.3
+    }));
+    side.position.x = i === 0 ? -1.05 : 1.05;
+    side.position.z = -0.04;
+    frameSides.push(side);
+  }
+  const handleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4);
+  const handleMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc0c0c0
   });
-  const frame = new THREE.Mesh(frameGeometry, frameMaterial);
-  frame.position.z = -0.05;
-  const handleBase = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 0.1), new THREE.MeshStandardMaterial({
-    color: 0xc0c0c0,
-    metalness: 0.8
-  }));
-  handleBase.position.set(0.8, 0, 0.1);
-  const handleBar = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4), new THREE.MeshStandardMaterial({
-    color: 0xc0c0c0,
-    metalness: 0.8
-  }));
-  handleBar.rotation.x = Math.PI / 2;
-  handleBar.position.set(0.85, 0, 0.15);
+  const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+  handle.rotation.x = Math.PI / 2;
+  handle.position.set(0.8, 0, 0.1);
   doorGroup.add(glass);
-  doorGroup.add(frame);
-  doorGroup.add(handleBase);
-  doorGroup.add(handleBar);
+  doorGroup.add(frameTop);
+  frameSides.forEach(side => doorGroup.add(side));
+  doorGroup.add(handle);
   return doorGroup;
 }
 const scene = new THREE.Scene();
@@ -278,6 +284,7 @@ const pillarMaterial = new THREE.MeshStandardMaterial({
 const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
 pillar.position.set(5.2, 5, 9.8);
 scene.add(pillar);
+scene.children = scene.children.filter(obj => !(obj.geometry instanceof THREE.BoxGeometry && obj.position.y === 0.15));
 function createBaseboard(length, isHorizontal) {
   const baseboardGeometry = new THREE.BoxGeometry(isHorizontal ? length : 0.2, 0.3, isHorizontal ? 0.2 : length);
   const baseboardMaterial = new THREE.MeshStandardMaterial({
@@ -300,15 +307,6 @@ scene.add(frontBaseboard1);
 const frontBaseboard2 = createBaseboard(5, true);
 frontBaseboard2.position.set(7.5, 0.15, 9.9);
 scene.add(frontBaseboard2);
-const doorTrimLeft = createBaseboard(4, false);
-doorTrimLeft.position.set(2.9, 0.15, 9.9);
-scene.add(doorTrimLeft);
-const doorTrimRight = createBaseboard(4, false);
-doorTrimRight.position.set(5.1, 0.15, 9.9);
-scene.add(doorTrimRight);
-const doorTrimTop = createBaseboard(2.4, true);
-doorTrimTop.position.set(4, 4.15, 9.9);
-scene.add(doorTrimTop);
 function createChair() {
   const chairGroup = new THREE.Group();
   const seatGeometry = new THREE.BoxGeometry(1, 0.1, 1);
@@ -504,7 +502,7 @@ function animate() {
   sanitizerPump.position.y = 0.2 + Math.sin(Date.now() * 0.001) * 0.02;
   const door = scene.getObjectById(doorway.id);
   if (door) {
-    door.rotation.y = Math.PI;
+    door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
   }
   const windows = scene.children.filter(child => child.material && child.material.type === 'MeshPhysicalMaterial');
   windows.forEach(window => {
