@@ -664,21 +664,17 @@ const humSound = new Audio('/gentle_hum_of_the_ai.mp3');
 humSound.onerror = () => {
   console.warn('Failed to load AC hum sound');
 };
-humSound.loop = true;  
+humSound.loop = true;
 let humFadeInterval;
-
 function playHumSound() {
   if (humSound.error) {
     console.warn('AC hum sound not available');
     return;
   }
-
   humSound.currentTime = 0;
   humSound.volume = 0;
   humSound.play().catch(e => console.warn('Error playing AC hum:', e));
-
   clearInterval(humFadeInterval);
-
   humFadeInterval = setInterval(() => {
     if (humSound.volume < 0.3) {
       humSound.volume += 0.01;
@@ -687,17 +683,16 @@ function playHumSound() {
       setTimeout(() => {
         humFadeInterval = setInterval(() => {
           if (humSound.volume > 0) {
-            humSound.volume -= 0.01; 
+            humSound.volume -= 0.01;
           } else {
             clearInterval(humFadeInterval);
             humSound.pause();
           }
         }, 100);
-      }, 2000); 
+      }, 2000);
     }
   }, 100);
 }
-
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -757,6 +752,8 @@ function updateAmbientInfo() {
       playBeepSound();
     } else if (newEvent.includes('air conditioning')) {
       playHumSound();
+    } else if (newEvent.includes('sanitizer')) {
+      playSanitizerSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
@@ -766,6 +763,18 @@ setInterval(updateStats, 30000);
 setInterval(updateAmbientInfo, 8000);
 updateStats();
 updateAmbientInfo();
-animate();</script>
+animate();
+const sanitizerSound = new Audio('/Hand_sanitizer_being.mp3');
+sanitizerSound.onerror = () => {
+  console.warn('Failed to load hand sanitizer sound');
+};
+function playSanitizerSound() {
+  if (sanitizerSound.error) {
+    console.warn('Hand sanitizer sound not available');
+    return;
+  }
+  sanitizerSound.currentTime = 0;
+  sanitizerSound.play().catch(e => console.warn('Error playing sanitizer sound:', e));
+}</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
