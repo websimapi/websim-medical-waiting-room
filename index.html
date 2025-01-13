@@ -648,6 +648,18 @@ function playRandomPenSound() {
   randomSound.currentTime = 0;
   randomSound.play().catch(e => console.warn('Error playing pen sound:', e));
 }
+const beepSound = new Audio('/Quiet_beep_from_the_.mp3');
+beepSound.onerror = () => {
+  console.warn('Failed to load beep sound');
+};
+function playBeepSound() {
+  if (beepSound.error) {
+    console.warn('Beep sound not available');
+    return;
+  }
+  beepSound.currentTime = 0;
+  beepSound.play().catch(e => console.warn('Error playing beep sound:', e));
+}
 function animate() {
   requestAnimationFrame(animate);
   plant.rotation.y += 0.001;
@@ -703,6 +715,8 @@ function updateAmbientInfo() {
       playFootstepsSound();
     } else if (newEvent.includes('Pen')) {
       playRandomPenSound();
+    } else if (newEvent.includes('beep')) {
+      playBeepSound();
     }
   } catch (e) {
     console.warn('Error playing ambient sound:', e);
