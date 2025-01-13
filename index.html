@@ -102,18 +102,18 @@ function createWarningSign() {
 function createEnhancedGlassMaterial() {
   return new THREE.MeshPhysicalMaterial({
     transparent: true,
-    opacity: 0.15,
-    roughness: 0.01,
-    transmission: 0.99,
-    thickness: 0.02,
+    opacity: 0.3,
+    roughness: 0.05,
+    transmission: 0.95,
+    thickness: 0.05,
     clearcoat: 1.0,
-    clearcoatRoughness: 0.05,
-    ior: 1.52,
-    envMapIntensity: 2.0,
-    reflectivity: 1.0,
+    clearcoatRoughness: 0.1,
+    ior: 1.5,
+    envMapIntensity: 1.5,
+    reflectivity: 0.7,
     metalness: 0.0,
-    attenuationColor: new THREE.Color(0xffffff),
-    attenuationDistance: 5.0
+    attenuationColor: new THREE.Color(0xffffff), 
+    attenuationDistance: 0.5
   });
 }
 function createGlassWall(width, height) {
@@ -156,6 +156,10 @@ function createGlassDoor() {
 }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6e9ed);
+const skyColor = new THREE.Color(0x87ceeb);
+const groundColor = new THREE.Color(0x267F00);
+const hemisphereLight = new THREE.HemisphereLight(skyColor, groundColor, 1);
+scene.add(hemisphereLight);
 const warningSign = createWarningSign();
 warningSign.position.set(4, 6, -9.8);
 warningSign.rotation.x = -Math.PI * 0.05;
@@ -270,6 +274,8 @@ for (let i = 0; i < 3; i++) {
   const window = createGlassWall(4, 4);
   window.position.set(9.95, 5, -7 + i * 5);
   window.rotation.y = -Math.PI / 2;
+  window.material.side = THREE.DoubleSide;
+
   const frameTop = new THREE.Mesh(
     new THREE.BoxGeometry(4.2, 0.1, 0.1),
     new THREE.MeshStandardMaterial({ color: 0x505050 })
@@ -290,7 +296,7 @@ for (let i = 0; i < 3; i++) {
   frameLeft.rotation.y = -Math.PI / 2;
   scene.add(frameLeft);
   
-  const frameRight = frameLeft.clone(); 
+  const frameRight = frameLeft.clone();
   frameRight.position.z = -8.9 + i * 5;
   scene.add(frameRight);
 
@@ -299,6 +305,7 @@ for (let i = 0; i < 3; i++) {
 const glassWall = createGlassWall(20, 10);
 glassWall.position.set(0, 5, 10);
 glassWall.rotation.y = Math.PI;
+glassWall.material.side = THREE.DoubleSide;
 scene.add(glassWall);
 const doorway = createGlassDoor();
 doorway.position.set(4, 2, 9.9);
@@ -537,9 +544,12 @@ function animate() {
   if (door) {
     door.rotation.y = Math.PI + Math.sin(Date.now() * 0.0005) * 0.02;
   }
-  const windows = scene.children.filter(child => child.material && child.material.type === 'MeshPhysicalMaterial');
+  const windows = scene.children.filter(child => 
+    child.material && child.material.type === 'MeshPhysicalMaterial'
+  );
   windows.forEach(window => {
-    window.material.envMapIntensity = 1.2 + Math.sin(Date.now() * 0.001) * 0.2;
+    window.material.transmission = 0.95 + Math.sin(Date.now() * 0.001) * 0.03;
+    window.material.opacity = 0.3 + Math.sin(Date.now() * 0.001) * 0.1;
   });
   renderer.render(scene, camera);
 }
