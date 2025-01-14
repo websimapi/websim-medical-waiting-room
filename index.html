@@ -72,6 +72,7 @@ canvas {
   <p>Average Wait Time: <span id="waitTime">23</span> minutes</p>
   <p>Next Patient: <span id="nextPatient">Johnson, Sarah</span></p>
   <p>Room Temperature: <span id="temperature">72&#xb0;F</span></p>
+  <p>Time Waited: <span id="timeWaited">0</span> minutes</p>
   <div class="ambient-info" id="ambientInfo"></div>
 </div>
 
@@ -187,202 +188,6 @@ function createCoffeeTable() {
   });
   table.add(glassTop);
   return table;
-}
-function createPhoneSystem() {
-  const phoneGroup = new THREE.Group();
-  const baseGeometry = new THREE.BoxGeometry(0.25, 0.35, 0.12);
-  const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    roughness: 0.7,
-    metalness: 0.2
-  });
-  const base = new THREE.Mesh(baseGeometry, baseMaterial);
-  const screenGeometry = new THREE.PlaneGeometry(0.2, 0.12);
-  const screenCanvas = document.createElement('canvas');
-  screenCanvas.width = 256;
-  screenCanvas.height = 128;
-  const context = screenCanvas.getContext('2d');
-  context.fillStyle = '#000000';
-  context.fillRect(0, 0, 256, 128);
-  context.fillStyle = '#00ff00';
-  context.font = '20px monospace';
-  context.textAlign = 'center';
-  context.fillText('LINE 1 ACTIVE', 128, 40);
-  context.fillText('12:00 PM', 128, 80);
-  const screenTexture = new THREE.CanvasTexture(screenCanvas);
-  const screenMaterial = new THREE.MeshBasicMaterial({
-    map: screenTexture,
-    emissive: 0x00ff00,
-    emissiveIntensity: 0.2
-  });
-  const screen = new THREE.Mesh(screenGeometry, screenMaterial);
-  screen.position.z = 0.061;
-  screen.position.y = 0.08;
-  const handsetGeometry = new THREE.BoxGeometry(0.08, 0.22, 0.04);
-  const handsetMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    roughness: 0.8
-  });
-  const handset = new THREE.Mesh(handsetGeometry, handsetMaterial);
-  const speakerGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.04, 8);
-  const speakerMaterial = new THREE.MeshStandardMaterial({
-    color: 0x1a1a1a
-  });
-  const earpiece = new THREE.Mesh(speakerGeometry, speakerMaterial);
-  earpiece.rotation.x = Math.PI / 2;
-  earpiece.position.set(0, 0.1, 0.025);
-  const mouthpiece = new THREE.Mesh(speakerGeometry, speakerMaterial);
-  mouthpiece.rotation.x = Math.PI / 2;
-  mouthpiece.position.set(0, -0.1, 0.025);
-  const handsetGroup = new THREE.Group();
-  handsetGroup.add(handset);
-  handsetGroup.add(earpiece);
-  handsetGroup.add(mouthpiece);
-  handsetGroup.position.set(0.15, -0.05, 0.1);
-  handsetGroup.rotation.z = -Math.PI / 12;
-  const buttonPad = new THREE.Group();
-  const buttons = [];
-  const buttonGeometry = new THREE.BoxGeometry(0.03, 0.03, 0.01);
-  const buttonMaterial = new THREE.MeshStandardMaterial({
-    color: 0xeeeeee,
-    roughness: 0.5
-  });
-  for (let i = 0; i < 12; i++) {
-    const button = new THREE.Mesh(buttonGeometry, buttonMaterial);
-    const row = Math.floor(i / 3);
-    const col = i % 3;
-    button.position.set((col - 1) * 0.05, -0.08 - row * 0.05, 0.061);
-    buttons.push(button);
-    buttonPad.add(button);
-  }
-  phoneGroup.add(base);
-  phoneGroup.add(screen);
-  phoneGroup.add(handsetGroup);
-  phoneGroup.add(buttonPad);
-  return phoneGroup;
-}
-function createCeilingAndDucts() {
-  const ceilingGroup = new THREE.Group();
-  const ceilingGeometry = new THREE.PlaneGeometry(20, 20);
-  const ceilingMaterial = new THREE.MeshStandardMaterial({
-    color: 0xf0f0f0,
-    roughness: 0.9,
-    metalness: 0.1
-  });
-  const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-  ceiling.rotation.x = Math.PI / 2;
-  ceiling.position.y = 10;
-  ceilingGroup.add(ceiling);
-  const mainDuctGeometry = new THREE.BoxGeometry(2, 0.6, 20);
-  const ductMaterial = new THREE.MeshStandardMaterial({
-    color: 0xd3d3d3,
-    roughness: 0.6,
-    metalness: 0.4
-  });
-  const mainDuct = new THREE.Mesh(mainDuctGeometry, ductMaterial);
-  mainDuct.position.set(0, 9.7, 0);
-  ceilingGroup.add(mainDuct);
-  const branchPositions = [-6, -2, 2, 6];
-  branchPositions.forEach(x => {
-    const branchDuct = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 0.4), ductMaterial);
-    branchDuct.position.set(x, 9.5, 0);
-    ceilingGroup.add(branchDuct);
-    const ventGeometry = new THREE.CircleGeometry(0.3, 8);
-    const ventMaterial = new THREE.MeshStandardMaterial({
-      color: 0xcccccc,
-      roughness: 0.8
-    });
-    const vent = new THREE.Mesh(ventGeometry, ventMaterial);
-    vent.rotation.x = Math.PI / 2;
-    vent.position.set(x, 9.3, 0);
-    ceilingGroup.add(vent);
-  });
-  return ceilingGroup;
-}
-function createPenAndClipboard() {
-  const group = new THREE.Group();
-  group.userData = {
-    type: 'penclipboard'
-  };
-  const boardGeometry = new THREE.BoxGeometry(0.3, 0.02, 0.4);
-  const boardMaterial = new THREE.MeshStandardMaterial({
-    color: 0x8B4513,
-    roughness: 0.8
-  });
-  const clipboard = new THREE.Mesh(boardGeometry, boardMaterial);
-  const paperGeometry = new THREE.PlaneGeometry(0.28, 0.38);
-  const paperMaterial = new THREE.MeshStandardMaterial({
-    color: 0xFFFFFF,
-    roughness: 0.9
-  });
-  const paper = new THREE.Mesh(paperGeometry, paperMaterial);
-  paper.position.y = 0.011;
-  paper.rotation.x = -Math.PI / 2;
-  const penGeometry = new THREE.CylinderGeometry(0.01, 0.01, 0.15, 8);
-  const penMaterial = new THREE.MeshStandardMaterial({
-    color: 0x000080,
-    roughness: 0.5,
-    metalness: 0.5
-  });
-  const pen = new THREE.Mesh(penGeometry, penMaterial);
-  pen.position.set(0.1, 0.02, -0.05);
-  pen.rotation.z = Math.PI / 6;
-  group.add(clipboard);
-  group.add(paper);
-  group.add(pen);
-  return group;
-}
-function createSanitizer() {
-  const sanitizerGroup = new THREE.Group();
-
-  // Create base
-  const baseGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.3);
-  const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0xdddddd,
-    roughness: 0.7,
-    metalness: 0.3
-  });
-  const base = new THREE.Mesh(baseGeometry, baseMaterial);
-  sanitizerGroup.add(base);
-
-  // Create pump/dispenser
-  const pumpGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.2, 8);
-  const pumpMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    roughness: 0.5,
-    metalness: 0.5
-  });
-  const pump = new THREE.Mesh(pumpGeometry, pumpMaterial);
-  pump.position.y = 0.2;
-  pump.position.z = 0.05;
-  sanitizerGroup.add(pump);
-
-  // Create container
-  const containerGeometry = new THREE.BoxGeometry(0.35, 0.3, 0.25);
-  const containerMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.6,
-    roughness: 0.2,
-    transmission: 0.5,
-    thickness: 0.5
-  });
-  const container = new THREE.Mesh(containerGeometry, containerMaterial);
-  container.position.y = 0.15;
-  sanitizerGroup.add(container);
-
-  // Create liquid level indicator
-  const liquidGeometry = new THREE.BoxGeometry(0.33, 0.2, 0.23);
-  const liquidMaterial = new THREE.MeshStandardMaterial({
-    color: 0x90EE90,
-    transparent: true,
-    opacity: 0.7
-  });
-  const liquid = new THREE.Mesh(liquidGeometry, liquidMaterial);
-  liquid.position.y = 0.1;
-  sanitizerGroup.add(liquid);
-
-  return sanitizerGroup;
 }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6e9ed);
@@ -634,23 +439,11 @@ function createReceptionDesk() {
   deskGroup.add(desk);
   deskGroup.add(computer);
   deskGroup.add(monitor);
-  deskGroup.userData = {
-    type: 'desk',
-    height: 1.2
-  };
   return deskGroup;
 }
 const receptionDesk = createReceptionDesk();
-const penAndClipboard = createPenAndClipboard();
-const deskSurfaceY = calculateDeskSurfaceY();
-penAndClipboard.position.set(1, 0.6, -5);
-penAndClipboard.rotation.y = Math.PI / 6;
-scene.add(penAndClipboard);
 receptionDesk.position.set(-8, 0.6, -8);
 scene.add(receptionDesk);
-const phone = createPhoneSystem();
-phone.position.set(-7, 3.5, -9.85);
-scene.add(phone);
 function createPlant() {
   const plantGroup = new THREE.Group();
   const potGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.6, 16);
@@ -740,6 +533,48 @@ function createMagazine() {
   magazine.add(cover);
   return magazine;
 }
+function createSanitizer() {
+  const sanitizer = new THREE.Group();
+  const baseGeometry = new THREE.CylinderGeometry(0.08, 0.1, 0.25, 8);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc2e8ff,
+    transparent: true,
+    opacity: 0.7
+  });
+  const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  const pumpGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.08, 8);
+  const pumpMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff
+  });
+  const pump = new THREE.Mesh(pumpGeometry, pumpMaterial);
+  pump.position.y = 0.15;
+  sanitizer.add(base);
+  sanitizer.add(pump);
+  return sanitizer;
+}
+function createWaterDispenser() {
+  const dispenser = new THREE.Group();
+  const tankGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1.2, 8);
+  const tankMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc2e8ff,
+    transparent: true,
+    opacity: 0.6
+  });
+  const tank = new THREE.Mesh(tankGeometry, tankMaterial);
+  tank.position.y = 0.9;
+  const baseGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: 0xeeeeee
+  });
+  const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  base.position.y = 0.3;
+  dispenser.add(tank);
+  dispenser.add(base);
+  return dispenser;
+}
+const coffeeTable = createCoffeeTable();
+coffeeTable.position.set(0, 0, -5);
+scene.add(coffeeTable);
 const magazineStack = new THREE.Group();
 for (let i = 0; i < 5; i++) {
   const magazine = createMagazine();
@@ -747,7 +582,7 @@ for (let i = 0; i < 5; i++) {
   magazine.rotation.y = Math.random() * Math.PI * 0.2;
   magazineStack.add(magazine);
 }
-magazineStack.position.set(-1, 0.6, -5);
+magazineStack.position.set(0, 0.6, -5);
 scene.add(magazineStack);
 const sanitizer = createSanitizer();
 sanitizer.position.set(-7, 1.2, -7.5);
@@ -929,14 +764,15 @@ function playDoorOpenSound() {
 let isExperienceStarted = false;
 const startButton = document.getElementById('startButton');
 function startExperience() {
+  waitingStartTime = Date.now();
   isExperienceStarted = true;
   startButton.classList.add('hidden');
   document.querySelector('.stats').classList.remove('hidden');
   setInterval(updateStats, 30000);
+  setInterval(updateAmbientInfo, 8000);
   updateStats();
   updateAmbientInfo();
   animate();
-  controls.enabled = true;
 }
 startButton.addEventListener('click', startExperience);
 document.querySelector('.stats').classList.add('hidden');
@@ -1070,135 +906,10 @@ function createThermostat() {
 const thermostat = createThermostat();
 thermostat.position.set(-5, 5, -9.85);
 scene.add(thermostat);
-function focusCamera(targetPosition, duration = 3000) {
-  const startPosition = camera.position.clone();
-  const startRotation = controls.target.clone();
-  const endPosition = targetPosition.clone().add(new THREE.Vector3(0, 2, 5));
-  const endRotation = targetPosition.clone();
-  const start = Date.now();
-  function animate() {
-    const now = Date.now();
-    const progress = Math.min(1, (now - start) / duration);
-    const eased = 1 - Math.cos(progress * Math.PI / 2);
-    camera.position.lerpVectors(startPosition, endPosition, eased);
-    controls.target.lerpVectors(startRotation, endRotation, eased);
-    controls.update();
-    if (progress < 1) {
-      requestAnimationFrame(animate);
-    }
-  }
-  animate();
-}
-function resetCamera(duration = 3000) {
-  const defaultPosition = new THREE.Vector3(0, 5, 10);
-  const defaultTarget = new THREE.Vector3(0, 2, 0);
-  focusCamera(defaultTarget, duration);
-  setTimeout(() => {
-    camera.position.copy(defaultPosition);
-    controls.target.copy(defaultTarget);
-    controls.update();
-  }, duration);
-}
-function updateAmbientInfo() {
-  const ambientInfo = document.getElementById('ambientInfo');
-  const existingEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...'];
-  const ambientEvents = [...existingEvents, 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Someone flipping through a magazine...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
-  const newEvent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
-  ambientInfo.textContent = newEvent;
-  try {
-    if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
-      playMagazineSound();
-      focusCamera(magazineStack.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('Children')) {
-      playChildrenSound(); 
-      focusCamera(new THREE.Vector3(9.95, 5, 0));
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('Water dispenser')) {
-      playWaterSound();
-      focusCamera(waterDispenser.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('Phone')) {
-      playPhoneSound();
-      focusCamera(phone.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('typing') || newEvent.includes('conversation')) {
-      if (newEvent.includes('typing')) playRandomTypingSound();
-      if (newEvent.includes('conversation')) playConversationSound();
-      focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('cough')) {
-      playRandomCoughSound();
-      focusCamera(new THREE.Vector3(-3, 0, -8));
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('footsteps')) {
-      playFootstepsSound();
-      focusCamera(doorway.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('Pen')) {
-      playRandomPenSound();
-      focusCamera(penAndClipboard.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('beep')) {
-      playBeepSound();
-      focusCamera(receptionDesk.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('air conditioning')) {
-      playHumSound();
-      focusCamera(new THREE.Vector3(0, 9, 0));
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('Door opening') || newEvent.includes('whoosh')) {
-      if (newEvent.includes('Door opening')) playDoorOpenSound();
-      if (newEvent.includes('whoosh')) playDoorWhooshSound();
-      focusCamera(doorway.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('sanitizer')) {
-      playSanitizerSound();
-      focusCamera(sanitizer.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('Clock')) {
-      playClockTickSound();
-      focusCamera(clock.position);
-      setTimeout(resetCamera, 7000);
-    } else if (newEvent.includes('adjusting their mask')) {
-      playMaskAdjustSound();
-      focusCamera(new THREE.Vector3(-3, 0, -8));
-      setTimeout(resetCamera, 7000);
-    }
-  } catch (e) {
-    console.warn('Error playing ambient sound:', e);
-  }
-}
-const ceilingAndDucts = createCeilingAndDucts();
-scene.add(ceilingAndDucts);
-THREE.Object3D.prototype.getObjectByUserData = function (key, value) {
-  if (this.userData[key] === value) return this;
-  for (const child of this.children) {
-    const result = child.getObjectByUserData(key, value);
-    if (result) return result;
-  }
-  return null;
-};
-function calculateDeskSurfaceY() {
-  const raycaster = new THREE.Raycaster();
-  const deskCenter = receptionDesk.position.clone();
-  deskCenter.y += 1.2;
-  raycaster.set(deskCenter, new THREE.Vector3(0, -1, 0));
-  const intersects = raycaster.intersectObject(receptionDesk, true);
-  if (intersects.length > 0) {
-    return intersects[0].point.y;
-  }
-  return receptionDesk.position.y + 1.2;
-}
-const existingPenClipboard = scene.getObjectByUserData('type', 'penclipboard');
-if (existingPenClipboard) {
-  const deskSurfaceY = calculateDeskSurfaceY();
-  existingPenClipboard.position.y = deskSurfaceY;
-}
+let waitingStartTime = null;
 function animate() {
   if (!isExperienceStarted) return;
   requestAnimationFrame(animate);
-  
   plant.rotation.y += 0.001;
   controls.update();
   const sanitizerPump = sanitizer.children[1];
@@ -1224,13 +935,10 @@ function animate() {
     clock.minuteHand.rotation.z = minuteAngle;
     clock.secondHand.rotation.z = secondAngle;
   }
-  const phone = scene.children.find(child => child.type === 'Group' && child.children.length === 4);
-  if (phone) {
-    phone.children[2].position.y = -0.05 + Math.sin(Date.now() * 0.001) * 0.002;
-  }
-  if (!animate.lastAmbientUpdate || Date.now() - animate.lastAmbientUpdate >= 2000) {
-    updateAmbientInfo();
-    animate.lastAmbientUpdate = Date.now();
+  const timeWaitedElement = document.getElementById('timeWaited');
+  if (waitingStartTime) {
+    const minutesWaited = Math.floor((Date.now() - waitingStartTime) / 60000);
+    timeWaitedElement.textContent = minutesWaited;
   }
   renderer.render(scene, camera);
 }
@@ -1239,6 +947,67 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
-animate();</script>
+function updateStats() {
+  const patientCount = document.getElementById('patientCount');
+  const waitTime = document.getElementById('waitTime');
+  const nextPatient = document.getElementById('nextPatient');
+  const temperature = document.getElementById('temperature');
+  const patients = ['Johnson, Sarah', 'Smith, Michael', 'Williams, Emma', 'Brown, David', 'Miller, Lisa', 'Davis, John', 'Wilson, Emily'];
+  patientCount.textContent = Math.floor(Math.random() * 3) + 3;
+  waitTime.textContent = Math.floor(Math.random() * 20) + 15;
+  nextPatient.textContent = patients[Math.floor(Math.random() * patients.length)];
+  const temp = Math.floor(Math.random() * 3) + 71;
+  temperature.textContent = `${temp}°F`;
+  thermostat.updateTemp(temp);
+  const timeWaitedElement = document.getElementById('timeWaited');
+  if (waitingStartTime) {
+    const minutesWaited = Math.floor((Date.now() - waitingStartTime) / 60000);
+    timeWaitedElement.textContent = minutesWaited;
+  }
+}
+function updateAmbientInfo() {
+  const ambientInfo = document.getElementById('ambientInfo');
+  const existingEvents = ['Pages rustling as someone reads a magazine...', 'Gentle hum of the air conditioning...', 'Quiet conversation at the reception desk...', 'Phone ringing in the distance...', 'Sound of typing from the receptionist...', 'Door opening as a patient enters...', 'Water dispenser bubbling softly...', 'Muffled footsteps from the hallway...', 'Pen scratching on clipboard...', 'Subtle cough from the corner...', 'Children\'s voices from outside...', 'Magazine pages being turned...'];
+  const ambientEvents = [...existingEvents, 'Water dispenser making quiet bubbling sounds...', 'Hand sanitizer being used...', 'Someone flipping through a magazine...', 'Quiet beep from the reception computer...', 'Gentle whoosh of the automatic doors...', 'Someone adjusting their mask...', 'Clock ticking softly on the wall...'];
+  const newEvent = ambientEvents[Math.floor(Math.random() * ambientEvents.length)];
+  ambientInfo.textContent = newEvent;
+  try {
+    if (newEvent.includes('magazine') || newEvent.includes('Pages')) {
+      playMagazineSound();
+    } else if (newEvent.includes('Children')) {
+      playChildrenSound();
+    } else if (newEvent.includes('Water dispenser')) {
+      playWaterSound();
+    } else if (newEvent.includes('Phone')) {
+      playPhoneSound();
+    } else if (newEvent.includes('conversation')) {
+      playConversationSound();
+    } else if (newEvent.includes('cough')) {
+      playRandomCoughSound();
+    } else if (newEvent.includes('footsteps')) {
+      playFootstepsSound();
+    } else if (newEvent.includes('Pen')) {
+      playRandomPenSound();
+    } else if (newEvent.includes('beep')) {
+      playBeepSound();
+    } else if (newEvent.includes('air conditioning')) {
+      playHumSound();
+    } else if (newEvent.includes('Door opening')) {
+      playDoorOpenSound();
+    } else if (newEvent.includes('sanitizer')) {
+      playSanitizerSound();
+    } else if (newEvent.includes('whoosh')) {
+      playDoorWhooshSound();
+    } else if (newEvent.includes('Clock')) {
+      playClockTickSound();
+    } else if (newEvent.includes('typing')) {
+      playRandomTypingSound();
+    } else if (newEvent.includes('adjusting their mask')) {
+      playMaskAdjustSound();
+    }
+  } catch (e) {
+    console.warn('Error playing ambient sound:', e);
+  }
+}</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
