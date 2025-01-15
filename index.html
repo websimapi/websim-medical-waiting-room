@@ -72,7 +72,7 @@ canvas {
   <p>Average Wait Time: <span id="waitTime">23</span> minutes</p>
   <p>Next Patient: <span id="nextPatient">Johnson, Sarah</span></p>
   <p>Room Temperature: <span id="temperature">72&#xb0;F</span></p>
-  <p>Time Waited: <span id="timeWaited">0</span> minutes</p>
+  <p>Time Waited: <span id="timeWaited">0:00:00</span></p>
   <div class="ambient-info" id="ambientInfo"></div>
 </div>
 
@@ -937,8 +937,11 @@ function animate() {
   }
   const timeWaitedElement = document.getElementById('timeWaited');
   if (waitingStartTime) {
-    const minutesWaited = Math.floor((Date.now() - waitingStartTime) / 60000);
-    timeWaitedElement.textContent = minutesWaited;
+    const timeElapsed = Date.now() - waitingStartTime;
+    const hours = Math.floor(timeElapsed / (1000 * 60 * 60));
+    const minutes = Math.floor(timeElapsed % (1000 * 60 * 60) / (1000 * 60));
+    const seconds = Math.floor(timeElapsed % (1000 * 60) / 1000);
+    timeWaitedElement.textContent = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
   renderer.render(scene, camera);
 }
@@ -959,11 +962,6 @@ function updateStats() {
   const temp = Math.floor(Math.random() * 3) + 71;
   temperature.textContent = `${temp}°F`;
   thermostat.updateTemp(temp);
-  const timeWaitedElement = document.getElementById('timeWaited');
-  if (waitingStartTime) {
-    const minutesWaited = Math.floor((Date.now() - waitingStartTime) / 60000);
-    timeWaitedElement.textContent = minutesWaited;
-  }
 }
 function updateAmbientInfo() {
   const ambientInfo = document.getElementById('ambientInfo');
